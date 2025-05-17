@@ -101,7 +101,7 @@
                 <div class="preview-container">
                     <!-- 左侧日历选择面板 - 简化为只显示日历并高亮今天 -->
                     <div class="calendar-panel">
-                        <t-calendar theme="card" />
+                        <t-calendar theme="card" multiple :value="highlightedDates" />
                     </div>
 
                     <!-- 右侧采价任务部分 -->
@@ -162,6 +162,11 @@ export default Vue.extend({
     },
     data() {
         return {
+            highlightedDates: [
+                dayjs().subtract(1, 'day').format('YYYY-MM-DD'), // 昨天
+                dayjs().format('YYYY-MM-DD'),                    // 今天
+                dayjs().add(1, 'day').format('YYYY-MM-DD'),     // 明天
+            ],
             formData: {
                 areaCode: '双流县',
                 pointType: '全部',
