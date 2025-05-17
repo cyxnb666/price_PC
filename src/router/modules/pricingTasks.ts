@@ -71,6 +71,18 @@ export default [
         component: () => import('@/pages/pricingTasks/taskPlan/index.vue'),
         meta: { title: '任务计划', menuId: 13 },
       },
+      {
+        path: 'taskPlanDetail/detail/:id',
+        name: 'taskPlanDetail',
+        component: () => import('@/pages/pricingTasks/taskPlan/components/TaskPlanDetail.vue'),
+        meta: {
+          title: '采价任务详情',
+          menuId: 10,
+          parent: 'taskPlanDetail',
+          hidden: true
+        },
+        props: true,
+      },
     ],
   },
 ];

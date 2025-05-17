@@ -349,12 +349,11 @@ export default Vue.extend({
             this.$message.success('创建任务成功');
         },
         handleViewDetails({ row }) {
-            console.log('查看详情:', row.id);
-            // 实际实现时跳转到详情页
-            // this.$router.push({
-            //   name: 'taskPlanDetail',
-            //   params: { id: row.id },
-            // });
+            this.$router.push({
+                name: 'taskPlanDetail',
+                params: { id: row.id },
+                query: { pricingMethod: row.pricingMethod === '区域占比' ? 'ratio' : 'specific' }
+            });
         },
         handleTerminate({ row }) {
             console.log('终止计划:', row.id);
