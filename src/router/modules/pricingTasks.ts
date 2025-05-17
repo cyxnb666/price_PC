@@ -23,8 +23,8 @@ export default [
         path: 'largeSalesPlan/detail/:id',
         name: 'largeSalesPlanDetail',
         component: () => import('@/pages/pricingTasks/largeSalesPlan/detail.vue'),
-        meta: { 
-          title: '大额出售计划详情', 
+        meta: {
+          title: '大额出售计划详情',
           menuId: 9,
           parent: 'largeSalesPlan',
           hidden: true
@@ -41,8 +41,8 @@ export default [
         path: 'marketPriceReporting/detail/:id',
         name: 'marketPriceReportingDetail',
         component: () => import('@/pages/pricingTasks/marketPriceReporting/detail.vue'),
-        meta: { 
-          title: '采价数据详情', 
+        meta: {
+          title: '采价数据详情',
           menuId: 10,
           parent: 'marketPriceReporting',
           hidden: true
@@ -64,7 +64,13 @@ export default [
           title: '统计分析',
           menuId: 12
         },
-      }
+      },
+      {
+        path: 'taskPlan',
+        name: 'taskPlan',
+        component: () => import('@/pages/pricingTasks/taskPlan/index.vue'),
+        meta: { title: '任务计划', menuId: 13 },
+      },
     ],
   },
 ];
