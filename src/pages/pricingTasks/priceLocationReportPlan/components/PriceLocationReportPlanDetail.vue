@@ -73,13 +73,19 @@
                 </t-col>
                 <t-col :span="4">
                   <div class="field-item">
-                    <label>选择采价点</label>
-                    <t-input v-model="basicInfo.selectedPoint" disabled placeholder="" />
+                    <label>是否发送短信提醒</label>
+                    <t-input v-model="basicInfo.smsSend" disabled placeholder="" />
                   </div>
                 </t-col>
               </t-row>
 
               <t-row :gutter="[16, 16]" v-if="!isCollapsed">
+                <t-col :span="4">
+                  <div class="field-item">
+                    <label>采价点</label>
+                    <t-input v-model="basicInfo.selectedPoint" disabled placeholder="" />
+                  </div>
+                </t-col>
                 <t-col :span="4">
                   <div class="field-item">
                     <label>创建人</label>
@@ -92,18 +98,25 @@
                     <t-input v-model="basicInfo.createTime" disabled placeholder="" />
                   </div>
                 </t-col>
-                <t-col :span="4">
-                  <div class="field-item">
-                    <label>任务结束/终止时间</label>
-                    <t-input v-model="basicInfo.endTime" disabled placeholder="" />
-                  </div>
-                </t-col>
               </t-row>
 
               <t-row :gutter="[16, 16]" v-if="!isCollapsed">
                 <t-col :span="4">
+                  <div class="field-item">
+                    <label>计划结束/终止时间</label>
+                    <t-input v-model="basicInfo.endTime" disabled placeholder="" />
+                  </div>
+                </t-col>
+                <t-col :span="4">
+                  <div class="field-item">
+                    <label>计划终止人</label>
+                    <t-input v-model="basicInfo.terminator" disabled placeholder="" />
+                  </div>
+                </t-col>
+                <t-col :span="4">
                   <div class="plan-terminate-btn">
-                    <t-button theme="warning" :disabled="!basicInfo.canTerminate" @click="handleTerminate">计划终止</t-button>
+                    <t-button theme="warning" :disabled="!basicInfo.canTerminate"
+                      @click="handleTerminate">计划终止</t-button>
                   </div>
                 </t-col>
               </t-row>
@@ -139,10 +152,10 @@
             </div>
 
             <div class="table-container">
-              <t-table :columns="tableColumns" :data="tableData" :rowKey="rowKey" :verticalAlign="verticalAlign" 
-                :hover="hover" :pagination="pagination" :loading="tableLoading" 
-                :headerAffixedTop="true" height="calc(100vh - 580px)">
-                
+              <t-table :columns="tableColumns" :data="tableData" :rowKey="rowKey" :verticalAlign="verticalAlign"
+                :hover="hover" :pagination="pagination" :loading="tableLoading" :headerAffixedTop="true"
+                height="calc(100vh - 580px)">
+
                 <template #customerIdentifier="{ row }">
                   <span v-if="row.customerIdentifier && row.customerIdentifier.includes('客户')" style="color: #e34d59">
                     {{ row.customerIdentifier }}
@@ -215,7 +228,7 @@ export default Vue.extend({
       tableLoading: false,
       isCollapsed: false,
       terminateDialogVisible: false,
-      
+
       basicInfo: {
         planId: 'JH202501010001',
         adminRegion: '四川-成都-xx镇',
@@ -225,29 +238,31 @@ export default Vue.extend({
         category: '柑橘',
         planPeriod: '2025/3/12-2025/5/15',
         reportPeriod: '2',
+        smsSend: '是',
         selectedPoint: '四川省-成都市-xx镇',
         creator: '王五',
         createTime: '2025-03-10 10:30:22',
         endTime: '',
+        terminator: '',
         canTerminate: true
       },
-      
+
       filterParams: {
         areaCode: '',
         pointId: '',
         taskStatus: ''
       },
-      
+
       areaOptions: [
         { label: '四川-成都-xx镇', value: 'SC-CD-XX' },
         { label: '四川-自贡-xx镇', value: 'SC-ZG-XX' }
       ],
-      
+
       pointOptions: [
         { label: '雨祖果蔬', value: 'P1' },
         { label: '成都果蔬批发', value: 'P2' }
       ],
-      
+
       taskStatusOptions: [
         { label: '全部', value: '' },
         { label: '待上报', value: '待上报' },
@@ -256,12 +271,12 @@ export default Vue.extend({
         { label: '待认领', value: '待认领' },
         { label: '已终止', value: '已终止' }
       ],
-      
+
       // 表格配置
       rowKey: 'id',
       verticalAlign: 'top',
       hover: true,
-      
+
       tableColumns: [
         { title: '任务编号', align: 'left', width: 150, ellipsis: true, colKey: 'id' },
         { title: '行政区划', align: 'left', width: 150, ellipsis: true, colKey: 'adminRegion' },
@@ -271,14 +286,14 @@ export default Vue.extend({
         { title: '任务状态', width: 100, ellipsis: true, colKey: 'status' },
         { title: '操作', align: 'left', fixed: 'right', width: 100, colKey: 'op' }
       ],
-      
+
       tableData: [
         { id: 'JH202501010001-0001', adminRegion: '四川-成都-xx镇', pointName: '采价点xxx', reportTime: '2025/3/12-2025/3/13', reporter: '张三', status: '待上报' },
         { id: 'JH202501010001-0002', adminRegion: '四川-自贡-xx镇', pointName: '采价点ccccc', reportTime: '2025/3/14-2025/3/15', reporter: '', status: '待认领' },
         { id: 'JH202501010001-0003', adminRegion: '四川-成都-xx区', pointName: '采价点aaaaa', reportTime: '2025/3/16-2025/3/17', reporter: '张三', status: '已上报' },
         { id: 'JH202501010001-0004', adminRegion: '四川-绵阳-xx县', pointName: '采价点bbbbb', reportTime: '2025/3/18-2025/3/19', reporter: '张三', status: '上报中' }
       ],
-      
+
       pagination: {
         pageSize: 10,
         total: 4,
@@ -292,30 +307,30 @@ export default Vue.extend({
   methods: {
     fetchData() {
       this.loading = true;
-      
+
       // 模拟获取数据
       setTimeout(() => {
         // 这里可以实现真实的API调用
         // 根据this.id获取计划详情
-        
+
         this.loading = false;
       }, 500);
     },
-    
+
     toggleCollapse() {
       this.isCollapsed = !this.isCollapsed;
     },
-    
+
     handleSearch() {
       this.tableLoading = true;
-      
+
       // 模拟搜索
       setTimeout(() => {
         this.tableLoading = false;
         // 实际中需要根据筛选条件调用API获取数据
       }, 300);
     },
-    
+
     handleReset() {
       this.filterParams = {
         areaCode: '',
@@ -324,37 +339,38 @@ export default Vue.extend({
       };
       this.handleSearch();
     },
-    
+
     onCurrentChange(current) {
       this.pagination.pageNo = current;
       this.handleSearch();
     },
-    
+
     onPageSizeChange(size) {
       this.pagination.pageSize = size;
       this.handleSearch();
     },
-    
+
     handleViewTaskDetail(row) {
       console.log('查看任务详情', row);
       // 实际中可以跳转到任务详情页面
     },
-    
+
     handleTerminate() {
       this.terminateDialogVisible = true;
     },
-    
+
     confirmTerminate() {
       // 实际中调用API终止计划
       console.log('确认终止计划', this.id);
       this.terminateDialogVisible = false;
       this.$message.success('计划已成功终止');
-      
+
       // 更新基础信息
       this.basicInfo.canTerminate = false;
       this.basicInfo.endTime = '2025-03-17 15:30:22';
+      this.basicInfo.terminator = '李四';
     },
-    
+
     goBack() {
       this.$router.back();
     }
@@ -396,7 +412,7 @@ export default Vue.extend({
   transition: max-height 0.3s ease;
   overflow: hidden;
   max-height: 1000px;
-  
+
   &.collapsed {
     max-height: 160px; // 约两行的高度
   }
@@ -423,19 +439,19 @@ export default Vue.extend({
   flex-wrap: wrap;
   margin-bottom: 16px;
   gap: 16px;
-  
+
   .filter-item {
     display: flex;
     flex-direction: column;
     width: 200px;
-    
+
     label {
       font-size: 14px;
       color: var(--td-text-color-secondary);
       margin-bottom: 8px;
     }
   }
-  
+
   .filter-actions {
     display: flex;
     align-items: flex-end;
