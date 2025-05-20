@@ -82,7 +82,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import { prefix } from '@/config/global';
-import TreeSelectDialog from './components/TreeSelectDialog.vue';
+import TreeSelectDialog from '../../../components/Tree/TreeSelectDialog.vue';
 
 export default Vue.extend({
   name: 'PricingMarket',
