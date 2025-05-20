@@ -5,8 +5,8 @@
         <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
           <t-col :span="3">
             <t-form-item label="行政区划" name="areaCode">
-              <t-tree-select clearable v-model="formData.areaCode" :treeProps="treeProps" :data="areaList"
-                placeholder="默认全部支持，模糊输入带出" />
+              <tree-select-dialog v-model="formData.areaCode" :data="areaList" :placeholder="'默认'"
+                :multiple="true" title="选择行政区划" :width="800" :treeHeight="500" @change="handleAreaChange" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
@@ -82,9 +82,13 @@
 <script lang="ts">
 import Vue from 'vue';
 import { prefix } from '@/config/global';
+import TreeSelectDialog from './components/TreeSelectDialog.vue';
 
 export default Vue.extend({
   name: 'PricingMarket',
+  components: {
+    TreeSelectDialog, // 注册组件
+  },
   data() {
     return {
       prefix,
@@ -155,7 +159,7 @@ export default Vue.extend({
         }
       ],
       formData: {
-        areaCode: '',
+        areaCode: [],
         categoryType: '',
         varietyType: '',
         pricingMethod: '',
@@ -194,33 +198,7 @@ export default Vue.extend({
       rowKey: 'id',
       verticalAlign: 'top',
       hover: true,
-      areaList: [
-        {
-          areaname: '四川',
-          areacode: 'SC',
-          children: [
-            {
-              areaname: '成都',
-              areacode: 'CD',
-              children: [
-                {
-                  areaname: '龙泉',
-                  areacode: 'LQ',
-                },
-                {
-                  areaname: '都江堰',
-                  areacode: 'DJY',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          areaname: '重庆',
-          areacode: 'CQ',
-          children: [],
-        },
-      ],
+      areaList: [],
       pagination: {
         pageSize: 10,
         total: 0,
@@ -236,9 +214,44 @@ export default Vue.extend({
     };
   },
   mounted() {
+    this.getAreaList();
     this.getList();
   },
   methods: {
+    handleAreaChange(value) {
+      this.formData.areaCode = value;
+    },
+    getAreaList() {
+      // 显示加载状态
+      this.dataLoading = true;
+
+      this.$request
+        .get('/web/area/selectWholeAreaTrees')
+        .then((res) => {
+          if (res.retCode === 200) {
+            const originalData = res.retData || [];
+
+            // 创建一个新的"全部"作为顶级父节点
+            const rootNode = {
+              areaname: '全部',
+              areacode: 'all', // 这个值不会被传递到后端
+              children: originalData // 将原始数据作为子节点
+            };
+
+            // 使用包含"全部"父节点的新结构
+            this.areaList = [rootNode];
+          } else {
+            this.$message.error(res.retMsg || '获取行政区划数据失败');
+          }
+        })
+        .catch((error) => {
+          console.error('获取行政区划数据出错:', error);
+          this.$message.error('获取行政区划数据出错');
+        })
+        .finally(() => {
+          this.dataLoading = false;
+        });
+    },
     onSearch() {
       this.getList(true);
     },
