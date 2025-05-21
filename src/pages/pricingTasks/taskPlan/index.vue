@@ -317,8 +317,8 @@ export default Vue.extend({
                                 planPeriod: `${item.collectBgnDate || ''}-${item.collectEndDate || ''}`,
                                 status: item.taskStatus || '',
                                 creator: item.collectorName || '',
-                                canTerminate: ['0', '1'].includes(item.taskStatus),
-                                canDelete: item.taskStatus !== '1', // 假设计划执行中的任务不能删除
+                                canTerminate: item.taskStatus === '1',
+                                canDelete: item.taskStatus === '0',
                             };
                         });
                         this.pagination.total = res.retData.total || 0;
@@ -337,23 +337,9 @@ export default Vue.extend({
         formatCustomerIdentifier(value) {
             if (value === '1') return '客户';
             if (value === '0') return '非客户';
-            if (value === '2') return '客户、非客户';
+            if (value === '') return '客户、非客户';
             return '';
         },
-        // formatTaskStatus(status) {
-        //     switch (status) {
-        //         case '0':
-        //             return '待开始';
-        //         case '1':
-        //             return '任务执行中';
-        //         case '2':
-        //             return '任务终止';
-        //         case '3':
-        //             return '任务结束';
-        //         default:
-        //             return '';
-        //     }
-        // },
         getAreaList() {
             this.$request
                 .post('/web/area/selectUserDataAreaTree')
@@ -527,10 +513,19 @@ export default Vue.extend({
                     theme: 'default',
                 },
                 onConfirm: () => {
-                    // TODO: 调用终止计划的API
-                    console.log('终止计划:', row.id);
-                    this.$message.success('计划已成功终止');
-                    this.getList(); // 刷新列表
+                    this.$request.post('/web/taskScheduling/programTerminationStop', row.id)
+                        .then(res => {
+                            if (res.retCode === 200) {
+                                this.$message.success('计划已成功终止');
+                                this.getList();
+                            } else {
+                                this.$message.error(res.retMsg || '终止计划失败');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            this.$message.error('终止计划失败');
+                        });
                 },
             });
         },
@@ -548,13 +543,24 @@ export default Vue.extend({
                     theme: 'default',
                 },
                 onConfirm: () => {
-                    // TODO: 调用删除计划的API
-                    console.log('删除计划:', row.id);
-                    this.$message.success('计划已成功删除');
-                    this.getList(); // 刷新列表
+                    this.$request.delete('/web/taskScheduling/programTerminationDelete', {
+                        data: row.id
+                    })
+                        .then(res => {
+                            if (res.retCode === 200) {
+                                this.$message.success('计划已成功删除');
+                                this.getList();
+                            } else {
+                                this.$message.error(res.retMsg || '删除计划失败');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            this.$message.error('删除计划失败');
+                        });
                 },
             });
-        },
+        }
     },
 });
 </script>
