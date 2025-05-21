@@ -220,10 +220,10 @@ export default Vue.extend({
             varietyOptions: [{ label: '全部', value: '' }],
             taskStatusOptions: [
                 { label: '全部', value: '' },
-                { label: '待采价', value: '2' },
-                { label: '采价中', value: '3' },
-                { label: '待审核', value: '4' },
-                { label: '已完成', value: '5' },
+                { label: '待开始', value: '0' },
+                { label: '任务执行中', value: '1' },
+                { label: '任务终止', value: '2' },
+                { label: '任务结束', value: '3' },
             ],
             rowKey: 'id',
             verticalAlign: 'top',
@@ -337,16 +337,14 @@ export default Vue.extend({
         },
         formatTaskStatus(status) {
             switch (status) {
+                case '0':
+                    return '待开始';
                 case '1':
-                    return '待认领';
+                    return '任务执行中';
                 case '2':
-                    return '待采价';
+                    return '任务终止';
                 case '3':
-                    return '暂存';
-                case '4':
-                    return '待审核';
-                case '5':
-                    return '已完成';
+                    return '任务结束';
                 default:
                     return '';
             }
