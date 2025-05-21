@@ -72,7 +72,12 @@
                         </span>
                         <span v-else>{{ row.customerIdentifier }}</span>
                     </template>
-
+                    <template #status="{ row }">
+                        <t-tag v-if="row.status === '0'" theme="primary" variant="light">待开始</t-tag>
+                        <t-tag v-if="row.status === '1'" theme="primary" variant="light">任务执行中</t-tag>
+                        <t-tag v-if="row.status === '2'" theme="warning" variant="light">任务终止</t-tag>
+                        <t-tag v-if="row.status === '3'" theme="success" variant="light">任务结束</t-tag>
+                    </template>
                     <template #op="slotProps">
                         <t-button theme="primary" variant="text" class="t-button-link"
                             style="color: #0052d9; padding: 0px 0px 10px 0px"
@@ -310,7 +315,7 @@ export default Vue.extend({
                                 point: item.collectType === '1' ? `${item.collectRate}%` : item.stallName || '',
                                 reportPeriod: item.escalationCycle || '',
                                 planPeriod: `${item.collectBgnDate || ''}-${item.collectEndDate || ''}`,
-                                status: this.formatTaskStatus(item.taskStatus),
+                                status: item.taskStatus || '',
                                 creator: item.collectorName || '',
                                 canTerminate: ['0', '1'].includes(item.taskStatus),
                                 canDelete: item.taskStatus !== '1', // 假设计划执行中的任务不能删除
@@ -335,20 +340,20 @@ export default Vue.extend({
             if (value === '2') return '客户、非客户';
             return '';
         },
-        formatTaskStatus(status) {
-            switch (status) {
-                case '0':
-                    return '待开始';
-                case '1':
-                    return '任务执行中';
-                case '2':
-                    return '任务终止';
-                case '3':
-                    return '任务结束';
-                default:
-                    return '';
-            }
-        },
+        // formatTaskStatus(status) {
+        //     switch (status) {
+        //         case '0':
+        //             return '待开始';
+        //         case '1':
+        //             return '任务执行中';
+        //         case '2':
+        //             return '任务终止';
+        //         case '3':
+        //             return '任务结束';
+        //         default:
+        //             return '';
+        //     }
+        // },
         getAreaList() {
             this.$request
                 .post('/web/area/selectUserDataAreaTree')
