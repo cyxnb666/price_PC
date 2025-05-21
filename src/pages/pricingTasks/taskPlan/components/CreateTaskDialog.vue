@@ -6,41 +6,36 @@
                 <t-form ref="taskForm" :data="formData" label-width="110px">
                     <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
                         <t-col :span="3">
-                            <t-form-item label="行政区划" name="areaCode">
-                                <t-select v-model="formData.areaCode" placeholder="请选择" clearable>
-                                    <t-option key="1" label="双流县" value="双流县" />
-                                </t-select>
+                            <t-form-item label="行政区划" name="areaCodes">
+                                <t-tree-select v-model="formData.areaCodes" placeholder="请选择" clearable multiple
+                                    :data="areaList" :treeProps="treeProps" />
                             </t-form-item>
                         </t-col>
                         <t-col :span="3">
                             <t-form-item label="采价点类型" name="pointType">
-                                <t-select v-model="formData.pointType" placeholder="全部" clearable>
-                                    <t-option key="1" label="全部" value="全部" />
-                                </t-select>
+                                <t-select v-model="formData.pointType" placeholder="请选择" clearable
+                                    :options="pointTypeOptions" />
                             </t-form-item>
                         </t-col>
                         <t-col :span="3">
                             <t-form-item label="采价点归属" name="pointAffiliation">
-                                <t-select v-model="formData.pointAffiliation" placeholder="全部" clearable>
-                                    <t-option key="1" label="全部" value="全部" />
-                                </t-select>
+                                <t-select v-model="formData.pointAffiliation" placeholder="请选择" clearable
+                                    :options="pointAffiliationOptions" />
                             </t-form-item>
                         </t-col>
                         <t-col :span="3">
                             <t-form-item label="采价点客户标识" name="customerType">
-                                <t-select v-model="formData.customerType" placeholder="全部" clearable>
-                                    <t-option key="1" label="全部" value="全部" />
-                                </t-select>
+                                <t-select v-model="formData.customerType" placeholder="请选择" clearable
+                                    :options="customerIdentifierOptions" />
                             </t-form-item>
                         </t-col>
                     </t-row>
 
                     <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
                         <t-col :span="3">
-                            <t-form-item label="品种" name="category">
-                                <t-select v-model="formData.category" placeholder="全部" clearable>
-                                    <t-option key="1" label="全部" value="全部" />
-                                </t-select>
+                            <t-form-item label="品种" name="varietyId">
+                                <t-select v-model="formData.varietyId" placeholder="请选择" clearable
+                                    :options="varietyOptions" />
                             </t-form-item>
                         </t-col>
                         <t-col :span="3">
@@ -56,9 +51,7 @@
                         </t-col>
                         <t-col :span="3">
                             <t-form-item label="是否发送短信提醒" name="sendSms">
-                                <t-select v-model="formData.sendSms">
-                                    <t-option key="true" label="是" :value="true" />
-                                    <t-option key="false" label="否" :value="false" />
+                                <t-select v-model="formData.sendSms" :options="smsReminderOptions">
                                 </t-select>
                             </t-form-item>
                         </t-col>
@@ -67,9 +60,8 @@
                     <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
                         <t-col :span="3">
                             <t-form-item label="采价方式" name="pricingMethod">
-                                <t-select v-model="formData.pricingMethod" placeholder="请选择">
-                                    <t-option key="ratio" label="区域占比" value="ratio" />
-                                    <t-option key="specific" label="指定采价点" value="specific" />
+                                <t-select v-model="formData.pricingMethod" placeholder="请选择"
+                                    :options="pricingMethodOptions">
                                 </t-select>
                             </t-form-item>
                         </t-col>
@@ -80,8 +72,8 @@
                         </t-col>
                         <t-col :span="3" v-if="formData.pricingMethod === 'specific'">
                             <t-form-item label="采价点" name="specificPoint">
-                                <t-tree-select v-model="formData.specificPoint" :data="treeData" :treeProps="treeProps"
-                                    placeholder="请选择采价点" />
+                                <t-select v-model="formData.specificPoint" :options="pointOptions" placeholder="请选择采价点"
+                                    multiple />
                             </t-form-item>
                         </t-col>
                         <t-col :span="3">
@@ -100,12 +92,12 @@
                 <div class="preview-title">计划任务下发日历预览</div>
                 <div class="preview-container">
                     <!-- 左侧日历选择面板 - 添加了条件显示 -->
-                    <div class="calendar-panel">
+                    <!-- <div class="calendar-panel">
                         <t-calendar v-if="showCalendarPreview" theme="card" multiple :value="highlightedDates" />
                         <div v-else class="empty-calendar">
                             <div class="placeholder-text">点击"预览任务"查看日历预览</div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- 右侧采价任务部分 - 添加滚动条 -->
                     <div class="task-preview" v-if="showPreview">
@@ -116,23 +108,26 @@
                             <span class="task-info-item">次数: {{ taskCount }}</span>
                         </div>
                         <div class="task-preview-content">
-                            <t-table :data="previewData" :columns="currentColumns" bordered size="small" row-key="id">
-                                <template #district="{ row }">
-                                    {{ row.district }}
-                                </template>
-                                <template #ratio="{ row }">
-                                    {{ row.ratio }}%
-                                </template>
-                                <template #pointName="{ row }">
-                                    {{ row.pointName }}
-                                </template>
-                                <template #pointCount="{ row }">
-                                    {{ row.pointCount }}
-                                </template>
-                                <template #taskCount="{ row }">
-                                    {{ row.taskCount }}
-                                </template>
-                            </t-table>
+                            <t-loading :loading="previewLoading" text="加载预览数据...">
+                                <t-table :data="previewData" :columns="currentColumns" bordered size="small"
+                                    row-key="id">
+                                    <template #district="{ row }">
+                                        {{ row.district }}
+                                    </template>
+                                    <template #ratio="{ row }">
+                                        {{ row.ratio }}%
+                                    </template>
+                                    <template #pointName="{ row }">
+                                        {{ row.pointName }}
+                                    </template>
+                                    <template #pointCount="{ row }">
+                                        {{ row.pointCount }}
+                                    </template>
+                                    <template #taskCount="{ row }">
+                                        {{ row.taskCount }}
+                                    </template>
+                                </t-table>
+                            </t-loading>
                         </div>
                     </div>
                     <div class="empty-preview" v-else>
@@ -164,73 +159,63 @@ export default Vue.extend({
     },
     data() {
         return {
+            previewLoading: false,
             highlightedDates: [],
             // 存储初始表单数据，用于重置
             initialFormData: {
-                areaCode: '双流县',
-                pointType: '全部',
-                pointAffiliation: '全部',
-                customerType: '全部',
-                category: '全部',
-                planPeriod: ['2025-05-01', '2025-07-01'],
+                areaCodes: [],
+                pointType: '',
+                pointAffiliation: '',
+                customerType: '',
+                varietyId: '',
+                planPeriod: [dayjs().format('YYYY-MM-DD'), dayjs().add(30, 'day').format('YYYY-MM-DD')],
                 reportPeriod: 2,
                 pricingMethod: 'ratio',
                 ratio: 30,
-                specificPoint: '',
+                specificPoint: [],
                 sendSms: true,
             },
             formData: {
-                areaCode: '双流县',
-                pointType: '全部',
-                pointAffiliation: '全部',
-                customerType: '全部',
-                category: '全部',
-                planPeriod: ['2025-05-01', '2025-07-01'],
+                areaCodes: [],
+                pointType: '',
+                pointAffiliation: '',
+                customerType: '',
+                varietyId: '',
+                planPeriod: [dayjs().format('YYYY-MM-DD'), dayjs().add(30, 'day').format('YYYY-MM-DD')],
                 reportPeriod: 2,
                 pricingMethod: 'ratio',
                 ratio: 30,
-                specificPoint: '',
+                specificPoint: [],
                 sendSms: true,
             },
             // 树形控件属性
             treeProps: {
                 keys: {
-                    label: 'name',
-                    value: 'id',
+                    label: 'areaname',
+                    value: 'areacode',
                     children: 'children',
                 }
             },
-            // 树形数据
-            treeData: [
-                {
-                    id: 'area1',
-                    name: '四川省-成都市',
-                    children: [
-                        {
-                            id: 'point1',
-                            name: '成都果蔬批发市场'
-                        },
-                        {
-                            id: 'point2',
-                            name: '锦江区农贸市场'
-                        }
-                    ]
-                },
-                {
-                    id: 'area2',
-                    name: '四川省-绵阳市',
-                    children: [
-                        {
-                            id: 'point3',
-                            name: '绵阳农产品中心批发市场'
-                        },
-                        {
-                            id: 'point4',
-                            name: '涪城区农贸市场'
-                        }
-                    ]
-                }
+
+            // 表单选项数据
+            areaList: [],
+            pointTypeOptions: [],
+            pointAffiliationOptions: [],
+            customerIdentifierOptions: [
+                { label: '客户', value: '1' },
+                { label: '非客户', value: '0' },
             ],
+            varietyOptions: [],
+            pointOptions: [],
+            pricingMethodOptions: [
+                { label: '区域占比', value: 'ratio' },
+                { label: '指定采价点', value: 'specific' },
+            ],
+            smsReminderOptions: [
+                { label: '是', value: true },
+                { label: '否', value: false },
+            ],
+
             showPreview: false, // 控制是否显示预览数据
             showCalendarPreview: false, // 控制是否显示日历预览
             currentColumns: [], // 当前显示的列
@@ -244,38 +229,44 @@ export default Vue.extend({
                 { colKey: 'district', title: '行政区划', width: '200' },
                 { colKey: 'pointName', title: '采价点', width: '250' },
             ],
-            // 预览数据 - 不同类型的数据示例
-            ratioPreviewData: [
-                { id: 1, district: '四川省-龙泉驿-A镇', ratio: 30, pointCount: 6, taskCount: 2 },
-                { id: 2, district: '四川省-龙泉驿-A镇', ratio: 30, pointCount: 10, taskCount: 3 },
-                { id: 3, district: '四川省-龙泉驿-A镇', ratio: 30, pointCount: 2, taskCount: 1 },
-                { id: 4, district: '四川省-龙泉驿-B镇', ratio: 30, pointCount: 5, taskCount: 2 },
-                { id: 5, district: '四川省-龙泉驿-B镇', ratio: 30, pointCount: 3, taskCount: 1 },
-                // 添加更多数据以测试滚动条
-                { id: 6, district: '四川省-龙泉驿-C镇', ratio: 30, pointCount: 8, taskCount: 2 },
-                { id: 7, district: '四川省-龙泉驿-C镇', ratio: 30, pointCount: 7, taskCount: 2 },
-                { id: 8, district: '四川省-龙泉驿-D镇', ratio: 30, pointCount: 9, taskCount: 3 },
-                { id: 9, district: '四川省-龙泉驿-D镇', ratio: 30, pointCount: 4, taskCount: 1 },
-                { id: 10, district: '四川省-龙泉驿-E镇', ratio: 30, pointCount: 12, taskCount: 4 },
-            ],
-            specificPreviewData: [
-                { id: 1, district: '四川省-成都市', pointName: '成都果蔬批发市场' },
-                { id: 2, district: '四川省-成都市', pointName: '锦江区农贸市场' },
-                { id: 3, district: '四川省-绵阳市', pointName: '绵阳农产品中心批发市场' },
-                { id: 4, district: '四川省-绵阳市', pointName: '涪城区农贸市场' },
-                // 添加更多数据以测试滚动条
-                { id: 5, district: '四川省-成都市', pointName: '武侯区农贸市场' },
-                { id: 6, district: '四川省-成都市', pointName: '青羊区农贸市场' },
-                { id: 7, district: '四川省-成都市', pointName: '金牛区农贸市场' },
-                { id: 8, district: '四川省-绵阳市', pointName: '游仙区农贸市场' },
-                { id: 9, district: '四川省-绵阳市', pointName: '安州区农贸市场' },
-                { id: 10, district: '四川省-德阳市', pointName: '广汉市农贸市场' },
-            ],
             previewData: [], // 实际显示的预览数据
             taskCount: 0, // 任务次数
         };
     },
+    watch: {
+        // 监听弹窗可见性变化
+        visible(newVal) {
+            if (newVal) {
+                this.initFormData();
+            }
+        },
+        // 监听行政区划变化
+        'formData.areaCodes': function (newVal) {
+            this.getPointOptions();
+        },
+        // 监听采价点归属变化
+        'formData.pointAffiliation': function (newVal) {
+            this.getPointOptions();
+        },
+        // 监听采价点类型变化
+        'formData.pointType': function (newVal) {
+            this.getPointOptions();
+        },
+    },
     methods: {
+        // 初始化表单数据和下拉选项
+        initFormData() {
+            // 重置表单为初始状态
+            this.resetForm();
+
+            // 获取下拉选项数据
+            this.getAreaList();
+            this.getPointTypeOptions();
+            this.getPointAffiliationOptions();
+            this.getVarietyOptions();
+            this.getPointOptions();
+        },
+
         formatDateRange(dateRange) {
             if (!dateRange || dateRange.length !== 2) return '';
             return `${dateRange[0]} 至 ${dateRange[1]}`;
@@ -326,28 +317,410 @@ export default Vue.extend({
 
         // 点击预览任务时更新预览数据
         onPreview() {
-            console.log('预览任务', this.formData);
+            // 验证必填字段
+            const requiredFields = ['areaCodes', 'pointType', 'pointAffiliation', 'customerType', 'varietyId', 'planPeriod', 'reportPeriod'];
 
-            // 根据选择的采价方式设置显示的列和数据
+            // 根据采价方式添加特定必填字段
             if (this.formData.pricingMethod === 'ratio') {
-                this.currentColumns = this.ratioColumns;
-                this.previewData = this.ratioPreviewData;
-            } else {
-                this.currentColumns = this.specificColumns;
-                this.previewData = this.specificPreviewData;
+                requiredFields.push('ratio');
+            } else if (this.formData.pricingMethod === 'specific') {
+                requiredFields.push('specificPoint');
             }
 
-            // 生成高亮日期
-            this.highlightedDates = this.generateHighlightedDates();
+            // 验证字段是否都已填写
+            const missingFields = requiredFields.filter(field => {
+                const value = this.formData[field];
+                if (Array.isArray(value)) {
+                    return value.length === 0;
+                }
+                return value === '' || value === null || value === undefined;
+            });
 
-            // 显示预览区域和日历预览
+            if (missingFields.length > 0) {
+                // 构建字段映射表，用于显示友好的字段名称
+                const fieldNameMap = {
+                    areaCodes: '行政区划',
+                    pointType: '采价点类型',
+                    pointAffiliation: '采价点归属',
+                    customerType: '采价点客户标识',
+                    varietyId: '品种',
+                    planPeriod: '计划周期',
+                    reportPeriod: '上报周期',
+                    ratio: '占比',
+                    specificPoint: '采价点'
+                };
+
+                // 获取缺失字段的友好名称
+                const missingFieldNames = missingFields.map(field => fieldNameMap[field]);
+
+                this.$message.warning(`请填写必填项: ${missingFieldNames.join(', ')}`);
+                return;
+            }
+
+            // 验证上报周期是否为正整数
+            const reportPeriod = parseInt(this.formData.reportPeriod, 10);
+            if (isNaN(reportPeriod) || reportPeriod <= 0) {
+                this.$message.warning('上报周期必须是正整数');
+                return;
+            }
+
+            // 如果选择了区域占比，验证比率是否为有效数字
+            if (this.formData.pricingMethod === 'ratio') {
+                const ratio = parseFloat(this.formData.ratio);
+                if (isNaN(ratio) || ratio <= 0 || ratio > 100) {
+                    this.$message.warning('占比必须是0-100之间的有效数字');
+                    return;
+                }
+            }
+
+            // 设置预览处于加载状态
             this.showPreview = true;
-            this.showCalendarPreview = true;
+            this.showCalendarPreview = false;
+            this.previewLoading = true;
+
+            // 准备API参数
+            const apiParams = {
+                condition: {
+                    // 基础参数
+                    areaCodes: this.formData.areaCodes,
+                    stallType: this.formData.pointType,
+                    stallVest: this.formData.pointAffiliation,
+                    customerIdentification: this.formData.customerType,
+                    varietyId: parseInt(this.formData.varietyId, 10),
+
+                    // 日期参数
+                    collectBgnDate: this.formData.planPeriod[0],
+                    collectEndDate: this.formData.planPeriod[1],
+
+                    // 周期参数
+                    escalationCycle: parseInt(this.formData.reportPeriod, 10),
+
+                    // 转换布尔值为字符串
+                    isSmsMessages: this.formData.sendSms ? "1" : "0",
+
+                    // 转换采价方式
+                    collectType: this.formData.pricingMethod === 'ratio' ? "1" : "2",
+                }
+            };
+
+            // 根据采价方式添加特定字段
+            if (this.formData.pricingMethod === 'ratio') {
+                apiParams.condition.collectRate = parseInt(this.formData.ratio, 10);
+            } else {
+                apiParams.condition.stallId = this.formData.specificPoint;
+            }
+
+            console.log('预览参数:', apiParams);
+
+            // 调用预览API
+            this.$request
+                .post('/web/taskScheduling/previewTheTaskSchedule', apiParams)
+                .then((res) => {
+                    if (res.retCode === 200) {
+                        // 获取预览数据
+                        const previewData = res.retData;
+
+                        // 更新任务信息（从后端获取）
+                        this.taskCount = previewData.frequency || 0;
+
+                        // 根据采价方式设置显示的列和数据
+                        if (this.formData.pricingMethod === 'ratio') {
+                            this.currentColumns = this.ratioColumns;
+
+                            // 处理区域占比的预览数据
+                            this.previewData = (previewData.previews || []).map((item, index) => ({
+                                id: index + 1,
+                                district: item.areaname || '',
+                                ratio: item.collectRate || 0,
+                                pointCount: item.stallCount || 0,
+                                taskCount: item.collectCount || 0
+                            }));
+                        } else {
+                            this.currentColumns = this.specificColumns;
+
+                            // 处理指定采价点的预览数据
+                            this.previewData = (previewData.previews || []).map((item, index) => ({
+                                id: index + 1,
+                                district: item.areaname || '',
+                                pointName: item.stallName || ''
+                            }));
+                        }
+
+                        // 生成高亮日期
+                        this.highlightedDates = this.generateHighlightedDates();
+
+                        // 显示预览区域和日历预览
+                        this.showCalendarPreview = true;
+
+                        // 如果没有数据，显示提示
+                        if (this.previewData.length === 0) {
+                            this.$message.info('没有符合条件的预览数据');
+                        }
+                    } else {
+                        this.$message.error(res.retMsg || '获取预览数据失败');
+                        this.showPreview = false;
+                        this.showCalendarPreview = false;
+                    }
+                })
+                .catch((e) => {
+                    console.error(e);
+                    this.$message.error('获取预览数据失败');
+                    this.showPreview = false;
+                    this.showCalendarPreview = false;
+                })
+                .finally(() => {
+                    this.previewLoading = false;
+                });
         },
 
         onConfirm() {
-            console.log('确定创建', this.formData);
-            this.$emit('confirm', this.formData);
+            // 先执行与预览相同的表单验证
+            const requiredFields = ['areaCodes', 'pointType', 'pointAffiliation', 'customerType', 'varietyId', 'planPeriod', 'reportPeriod'];
+
+            if (this.formData.pricingMethod === 'ratio') {
+                requiredFields.push('ratio');
+            } else if (this.formData.pricingMethod === 'specific') {
+                requiredFields.push('specificPoint');
+            }
+
+            const missingFields = requiredFields.filter(field => {
+                const value = this.formData[field];
+                if (Array.isArray(value)) {
+                    return value.length === 0;
+                }
+                return value === '' || value === null || value === undefined;
+            });
+
+            if (missingFields.length > 0) {
+                const fieldNameMap = {
+                    areaCodes: '行政区划',
+                    pointType: '采价点类型',
+                    pointAffiliation: '采价点归属',
+                    customerType: '采价点客户标识',
+                    varietyId: '品种',
+                    planPeriod: '计划周期',
+                    reportPeriod: '上报周期',
+                    ratio: '占比',
+                    specificPoint: '采价点'
+                };
+
+                const missingFieldNames = missingFields.map(field => fieldNameMap[field]);
+
+                this.$message.warning(`请填写必填项: ${missingFieldNames.join(', ')}`);
+                return;
+            }
+
+            // 验证上报周期是否为正整数
+            const reportPeriod = parseInt(this.formData.reportPeriod, 10);
+            if (isNaN(reportPeriod) || reportPeriod <= 0) {
+                this.$message.warning('上报周期必须是正整数');
+                return;
+            }
+
+            // 如果选择了区域占比，验证比率是否为有效数字
+            if (this.formData.pricingMethod === 'ratio') {
+                const ratio = parseFloat(this.formData.ratio);
+                if (isNaN(ratio) || ratio <= 0 || ratio > 100) {
+                    this.$message.warning('占比必须是0-100之间的有效数字');
+                    return;
+                }
+            }
+
+            // 准备API参数
+            const apiParams = {
+                condition: {
+                    // 基础参数
+                    areaCodes: this.formData.areaCodes,
+                    stallType: this.formData.pointType,
+                    stallVest: this.formData.pointAffiliation,
+                    customerIdentification: this.formData.customerType,
+                    varietyId: parseInt(this.formData.varietyId, 10),
+
+                    // 日期参数
+                    collectBgnDate: this.formData.planPeriod[0],
+                    collectEndDate: this.formData.planPeriod[1],
+
+                    // 周期参数
+                    escalationCycle: parseInt(this.formData.reportPeriod, 10),
+
+                    // 转换布尔值为字符串
+                    isSmsMessages: this.formData.sendSms ? "1" : "0",
+
+                    // 转换采价方式
+                    collectType: this.formData.pricingMethod === 'ratio' ? "1" : "2",
+                }
+            };
+
+            // 根据采价方式添加特定字段
+            if (this.formData.pricingMethod === 'ratio') {
+                apiParams.condition.collectRate = parseInt(this.formData.ratio, 10);
+            } else {
+                apiParams.condition.stallId = this.formData.specificPoint;
+            }
+
+            console.log('提交参数:', apiParams);
+
+            // 调用API创建任务
+            this.$request
+                .post('/web/taskScheduling/saveTaskScheduling', apiParams)
+                .then((res) => {
+                    if (res.retCode === 200) {
+                        this.$message.success('创建任务成功');
+                        this.$emit('confirm', this.formData); // 通知父组件
+                        this.onClose(); // 关闭对话框
+                    } else {
+                        this.$message.error(res.retMsg || '创建任务失败');
+                    }
+                })
+                .catch((e) => {
+                    console.error(e);
+                    this.$message.error('创建任务失败');
+                });
+        },
+
+        // API 调用方法
+        getAreaList() {
+            this.$request
+                .post('/web/area/selectUserDataAreaTree')
+                .then((res) => {
+                    if (res.retCode === 200) {
+                        this.areaList = res.retData || [];
+                    } else {
+                        this.$message.error(res.retMsg || '获取行政区划数据失败');
+                    }
+                })
+                .catch((e) => {
+                    console.error(e);
+                    this.$message.error('获取行政区划数据失败');
+                });
+        },
+
+        getPointTypeOptions() {
+            const params = {
+                condition: {
+                    dictType: 'STALL_TYPE',
+                },
+            };
+
+            this.$request
+                .post('/web/dict/queryTypeDicts', params)
+                .then((res) => {
+                    if (res.retCode === 200) {
+                        this.pointTypeOptions = [];
+
+                        if (res.retData && res.retData.length > 0) {
+                            const options = res.retData.map((item) => ({
+                                label: item.dictValue,
+                                value: item.dictCode,
+                            }));
+
+                            this.pointTypeOptions = [...this.pointTypeOptions, ...options];
+                        }
+                    } else {
+                        this.$message.error(res.retMsg || '获取采价点类型失败');
+                    }
+                })
+                .catch((e) => {
+                    console.error(e);
+                    this.$message.error('获取采价点类型失败');
+                });
+        },
+
+        getPointAffiliationOptions() {
+            const params = {
+                condition: {
+                    dictType: 'VEST_TYPE',
+                },
+            };
+
+            this.$request
+                .post('/web/dict/queryTypeDicts', params)
+                .then((res) => {
+                    if (res.retCode === 200) {
+                        this.pointAffiliationOptions = [];
+
+                        if (res.retData && res.retData.length > 0) {
+                            const options = res.retData.map((item) => ({
+                                label: item.dictValue,
+                                value: item.dictCode,
+                            }));
+
+                            this.pointAffiliationOptions = [...this.pointAffiliationOptions, ...options];
+                        }
+                    } else {
+                        this.$message.error(res.retMsg || '获取采价点归属失败');
+                    }
+                })
+                .catch((e) => {
+                    console.error(e);
+                    this.$message.error('获取采价点归属失败');
+                });
+        },
+
+        getPointOptions() {
+            const params = {
+                condition: {
+                    stallType: this.formData.pointType,
+                    stallVests: this.formData.pointAffiliation ? [this.formData.pointAffiliation] : [],
+                    areacodes: this.formData.areaCodes || [],
+                },
+            };
+
+            this.$request
+                .post('/web/stall/selectChooseStalls', params)
+                .then((res) => {
+                    if (res.retCode === 200) {
+                        this.pointOptions = [];
+
+                        if (res.retData && res.retData.length > 0) {
+                            const options = res.retData.map((item) => ({
+                                label: item.stallName,
+                                value: item.stallId,
+                            }));
+
+                            this.pointOptions = [...this.pointOptions, ...options];
+                        }
+
+                        // 如果有当前选中的采价点在新的选项中不存在，则过滤掉这些采价点
+                        if (this.formData.specificPoint && this.formData.specificPoint.length > 0) {
+                            const validOptions = this.pointOptions.map(option => option.value);
+                            this.formData.specificPoint = this.formData.specificPoint.filter(point =>
+                                validOptions.includes(point)
+                            );
+                        }
+                    } else {
+                        this.$message.error(res.retMsg || '获取采价点数据失败');
+                    }
+                })
+                .catch((e) => {
+                    console.error(e);
+                    this.$message.error('获取采价点数据失败');
+                });
+        },
+
+        getVarietyOptions() {
+            this.$request
+                .post('/web/variety/selectButtomVarieties')
+                .then((res) => {
+                    if (res.retCode === 200) {
+                        this.varietyOptions = [];
+
+                        if (res.retData && res.retData.length > 0) {
+                            const options = res.retData.map((item) => ({
+                                label: item.varietyName,
+                                value: item.varietyId,
+                            }));
+
+                            this.varietyOptions = [...this.varietyOptions, ...options];
+                        }
+                    } else {
+                        this.$message.error(res.retMsg || '获取品种失败');
+                    }
+                })
+                .catch((e) => {
+                    console.error(e);
+                    this.$message.error('获取品种失败');
+                });
         },
     }
 });
