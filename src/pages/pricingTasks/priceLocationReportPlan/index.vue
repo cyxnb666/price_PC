@@ -22,7 +22,7 @@
                         </t-form-item>
                     </t-col>
                     <t-col :span="3">
-                        <t-form-item label="采价点客户标识" name="customerIdentification">
+                        <t-form-item label="客户标识" name="customerIdentification">
                             <t-select clearable v-model="formData.customerIdentification" class="form-item-content"
                                 :options="customerIdentifierOptions" placeholder="请选择客户标识" />
                         </t-form-item>

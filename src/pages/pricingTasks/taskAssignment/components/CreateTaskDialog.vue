@@ -7,8 +7,8 @@
                     <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
                         <t-col :span="3">
                             <t-form-item label="行政区划" name="areaCodes">
-                                <t-tree-select v-model="formData.areaCodes" placeholder="请选择" clearable multiple
-                                    :data="areaList" :treeProps="treeProps" />
+                                <t-tree-select v-model="formData.areaCodes" filterable placeholder="请选择" clearable
+                                    multiple :data="areaList" :treeProps="treeProps" />
                             </t-form-item>
                         </t-col>
                         <t-col :span="3">
@@ -568,7 +568,7 @@ export default Vue.extend({
             };
 
             this.$request
-                .post('/web/stall/selectChooseStalls', params)
+                .post('/web/stall/selectChooseStalls2', params)
                 .then((res) => {
                     if (res.retCode === 200) {
                         this.pointOptions = [];
