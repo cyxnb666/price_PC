@@ -92,14 +92,14 @@
                 <div class="preview-title">计划任务下发日历预览</div>
                 <div class="preview-container">
                     <!-- 左侧日历选择面板 - 添加了条件显示 -->
-                    <!-- <div class="calendar-panel">
+                    <div class="calendar-panel">
                         <t-calendar v-if="showCalendarPreview" theme="card" multiple :value="highlightedDates" />
                         <div v-else class="empty-calendar">
                             <div class="placeholder-text">点击"预览任务"查看日历预览</div>
                         </div>
-                    </div> -->
+                    </div>
 
-                    <!-- 右侧采价任务部分 - 添加滚动条 -->
+                    <!-- 右侧采价任务部分 -->
                     <div class="task-preview" v-if="showPreview">
                         <div class="task-preview-title">采价任务</div>
                         <div class="task-info">
@@ -168,7 +168,7 @@ export default Vue.extend({
                 pointAffiliation: '',
                 customerType: '',
                 varietyId: '',
-                planPeriod: [dayjs().format('YYYY-MM-DD'), dayjs().add(30, 'day').format('YYYY-MM-DD')],
+                planPeriod: [],
                 reportPeriod: 2,
                 pricingMethod: 'ratio',
                 ratio: 30,
@@ -181,7 +181,7 @@ export default Vue.extend({
                 pointAffiliation: '',
                 customerType: '',
                 varietyId: '',
-                planPeriod: [dayjs().format('YYYY-MM-DD'), dayjs().add(30, 'day').format('YYYY-MM-DD')],
+                planPeriod: [],
                 reportPeriod: 2,
                 pricingMethod: 'ratio',
                 ratio: 30,
@@ -274,7 +274,7 @@ export default Vue.extend({
 
         // 重置表单和预览状态
         resetForm() {
-            // 深拷贝初始表单数据，防止引用问题
+            // 深拷贝初始表单数据
             this.formData = JSON.parse(JSON.stringify(this.initialFormData));
             this.showPreview = false;
             this.showCalendarPreview = false;
@@ -314,8 +314,7 @@ export default Vue.extend({
 
             return dates;
         },
-
-        // 点击预览任务时更新预览数据
+        // 预览任务
         onPreview() {
             // 验证必填字段
             const requiredFields = ['areaCodes', 'pointType', 'pointAffiliation', 'customerType', 'varietyId', 'planPeriod', 'reportPeriod'];
@@ -337,7 +336,7 @@ export default Vue.extend({
             });
 
             if (missingFields.length > 0) {
-                // 构建字段映射表，用于显示友好的字段名称
+                // 构建字段映射表
                 const fieldNameMap = {
                     areaCodes: '行政区划',
                     pointType: '采价点类型',
@@ -350,7 +349,7 @@ export default Vue.extend({
                     specificPoint: '采价点'
                 };
 
-                // 获取缺失字段的友好名称
+                // 获取缺失字段的名称
                 const missingFieldNames = missingFields.map(field => fieldNameMap[field]);
 
                 this.$message.warning(`请填写必填项: ${missingFieldNames.join(', ')}`);
@@ -373,12 +372,11 @@ export default Vue.extend({
                 }
             }
 
-            // 设置预览处于加载状态
+            // 加载状态
             this.showPreview = true;
             this.showCalendarPreview = false;
             this.previewLoading = true;
 
-            // 准备API参数
             const apiParams = {
                 condition: {
                     // 基础参数
@@ -395,7 +393,7 @@ export default Vue.extend({
                     // 周期参数
                     escalationCycle: parseInt(this.formData.reportPeriod, 10),
 
-                    // 转换布尔值为字符串
+                    // 转换为1-0
                     isSmsMessages: this.formData.sendSms ? "1" : "0",
 
                     // 转换采价方式
@@ -412,22 +410,16 @@ export default Vue.extend({
 
             console.log('预览参数:', apiParams);
 
-            // 调用预览API
             this.$request
                 .post('/web/taskScheduling/previewTheTaskSchedule', apiParams)
                 .then((res) => {
                     if (res.retCode === 200) {
-                        // 获取预览数据
                         const previewData = res.retData;
-
-                        // 更新任务信息（从后端获取）
                         this.taskCount = previewData.frequency || 0;
 
-                        // 根据采价方式设置显示的列和数据
                         if (this.formData.pricingMethod === 'ratio') {
                             this.currentColumns = this.ratioColumns;
 
-                            // 处理区域占比的预览数据
                             this.previewData = (previewData.previews || []).map((item, index) => ({
                                 id: index + 1,
                                 district: item.areaname || '',
@@ -437,8 +429,6 @@ export default Vue.extend({
                             }));
                         } else {
                             this.currentColumns = this.specificColumns;
-
-                            // 处理指定采价点的预览数据
                             this.previewData = (previewData.previews || []).map((item, index) => ({
                                 id: index + 1,
                                 district: item.areaname || '',
@@ -448,11 +438,9 @@ export default Vue.extend({
 
                         // 生成高亮日期
                         this.highlightedDates = this.generateHighlightedDates();
-
-                        // 显示预览区域和日历预览
                         this.showCalendarPreview = true;
 
-                        // 如果没有数据，显示提示
+                        // 如果没有数据就显示提示
                         if (this.previewData.length === 0) {
                             this.$message.info('没有符合条件的预览数据');
                         }
@@ -474,7 +462,6 @@ export default Vue.extend({
         },
 
         onConfirm() {
-            // 先执行与预览相同的表单验证
             const requiredFields = ['areaCodes', 'pointType', 'pointAffiliation', 'customerType', 'varietyId', 'planPeriod', 'reportPeriod'];
 
             if (this.formData.pricingMethod === 'ratio') {
@@ -526,32 +513,21 @@ export default Vue.extend({
                 }
             }
 
-            // 准备API参数
             const apiParams = {
                 condition: {
-                    // 基础参数
                     areaCodes: this.formData.areaCodes,
                     stallType: this.formData.pointType,
                     stallVest: this.formData.pointAffiliation,
                     customerIdentification: this.formData.customerType,
                     varietyId: parseInt(this.formData.varietyId, 10),
-
-                    // 日期参数
                     collectBgnDate: this.formData.planPeriod[0],
                     collectEndDate: this.formData.planPeriod[1],
-
-                    // 周期参数
                     escalationCycle: parseInt(this.formData.reportPeriod, 10),
-
-                    // 转换布尔值为字符串
                     isSmsMessages: this.formData.sendSms ? "1" : "0",
-
-                    // 转换采价方式
                     collectType: this.formData.pricingMethod === 'ratio' ? "1" : "2",
                 }
             };
 
-            // 根据采价方式添加特定字段
             if (this.formData.pricingMethod === 'ratio') {
                 apiParams.condition.collectRate = parseInt(this.formData.ratio, 10);
             } else {
@@ -560,13 +536,12 @@ export default Vue.extend({
 
             console.log('提交参数:', apiParams);
 
-            // 调用API创建任务
             this.$request
                 .post('/web/taskScheduling/saveTaskScheduling', apiParams)
                 .then((res) => {
                     if (res.retCode === 200) {
                         this.$message.success('创建任务成功');
-                        this.$emit('confirm', this.formData); // 通知父组件
+                        this.$emit('confirm', this.formData);
                         this.onClose(); // 关闭对话框
                     } else {
                         this.$message.error(res.retMsg || '创建任务失败');
@@ -578,7 +553,6 @@ export default Vue.extend({
                 });
         },
 
-        // API 调用方法
         getAreaList() {
             this.$request
                 .post('/web/area/selectUserDataAreaTree')
