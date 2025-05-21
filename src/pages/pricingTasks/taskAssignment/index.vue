@@ -5,46 +5,26 @@
         <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
           <t-col :span="3">
             <t-form-item label="行政区划" name="areaCode">
-              <t-tree-select
-                clearable
-                v-model="formData.areaCode"
-                :treeProps="treeProps"
-                :data="areaList"
-                placeholder="请选择行政区划"
-              />
+              <t-tree-select clearable v-model="formData.areaCode" :treeProps="treeProps" :data="areaList"
+                placeholder="请选择行政区划" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="采价点类型" name="stallType">
-              <t-select
-                clearable
-                v-model="formData.stallType"
-                class="form-item-content"
-                :options="pointTypeOptions"
-                placeholder="请选择采价点类型"
-              />
+              <t-select clearable v-model="formData.stallType" class="form-item-content" :options="pointTypeOptions"
+                placeholder="请选择采价点类型" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="采价点归属" name="stallVest">
-              <t-select
-                clearable
-                v-model="formData.stallVest"
-                class="form-item-content"
-                :options="pointAffiliationOptions"
-                placeholder="请选择采价点归属"
-              />
+              <t-select clearable v-model="formData.stallVest" class="form-item-content"
+                :options="pointAffiliationOptions" placeholder="请选择采价点归属" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="采价点" name="stallId">
-              <t-select
-                clearable
-                v-model="formData.stallId"
-                class="form-item-content"
-                :options="pointOptions"
-                placeholder="请选择采价点"
-              />
+              <t-select clearable v-model="formData.stallId" class="form-item-content" :options="pointOptions"
+                placeholder="请选择采价点" />
             </t-form-item>
           </t-col>
         </t-row>
@@ -52,35 +32,20 @@
         <t-row :gutter="[16, 24]">
           <t-col :span="3">
             <t-form-item label="品种" name="varietyId">
-              <t-select
-                clearable
-                v-model="formData.varietyId"
-                class="form-item-content"
-                :options="categoryOptions"
-                placeholder="请选择品种"
-              />
+              <t-select clearable v-model="formData.varietyId" class="form-item-content" :options="categoryOptions"
+                placeholder="请选择品种" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="采价员" name="collectorId">
-              <t-select
-                clearable
-                v-model="formData.collectorId"
-                class="form-item-content"
-                :options="personnelOptions"
-                placeholder="请选择采价员"
-              />
+              <t-select clearable v-model="formData.collectorId" class="form-item-content" :options="personnelOptions"
+                placeholder="请选择采价员" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="任务状态" name="taskStatus">
-              <t-select
-                clearable
-                v-model="formData.taskStatus"
-                class="form-item-content"
-                :options="taskStatusOptions"
-                placeholder="请选择任务状态"
-              />
+              <t-select clearable v-model="formData.taskStatus" class="form-item-content" :options="taskStatusOptions"
+                placeholder="请选择任务状态" />
             </t-form-item>
           </t-col>
         </t-row>
@@ -97,17 +62,8 @@
       </t-form>
 
       <div class="table-container">
-        <t-table
-          :columns="columns"
-          :data="data"
-          :rowKey="rowKey"
-          :verticalAlign="verticalAlign"
-          :hover="hover"
-          :pagination="pagination"
-          :loading="dataLoading"
-          :headerAffixedTop="true"
-          height="calc(100vh - 420px)"
-        >
+        <t-table :columns="columns" :data="data" :rowKey="rowKey" :verticalAlign="verticalAlign" :hover="hover"
+          :pagination="pagination" :loading="dataLoading" :headerAffixedTop="true" height="calc(100vh - 420px)">
           <template #collectType="{ row }">
             <p v-if="row.collectType === '1'">区域占比</p>
             <p v-if="row.collectType === '2'">指定采价点</p>
@@ -121,113 +77,56 @@
           </template>
 
           <template #op="slotProps">
-            <t-button
-              theme="primary"
-              variant="text"
-              class="t-button-link"
-              @click="handleTransfer(slotProps)"
-              v-if="slotProps.row.collectorId && slotProps.row.taskStatus == '2'"
-              :loading="transferLoading"
-              style="color: #0052d9; padding: 0px 0px 10px 0px"
-              >转派</t-button
-            >
-            <t-button
-              theme="primary"
-              variant="text"
-              class="t-button-link"
-              @click="handleAssign(slotProps)"
-              v-else-if="!slotProps.row.collectorId"
-              :loading="assignLoading"
-              style="color: #0052d9; padding: 0"
-              >指派</t-button
-            >
-            <t-button
-              theme="primary"
-              variant="text"
-              class="t-button-link"
-              style="color: #e34d59; padding: 0px 0px 10px 0px"
-              @click="handleDelete(slotProps)"
-              >删除</t-button
-            >
-            <t-button
-              theme="primary"
-              variant="text"
-              class="t-button-link"
-              style="color: #0052d9; padding: 0px 0px 10px 0px"
-              v-if="slotProps.row.auditId"
-              @click="handleViewDetails(slotProps)"
-              >详情</t-button
-            >
+            <t-button theme="primary" variant="text" class="t-button-link" @click="handleTransfer(slotProps)"
+              v-if="slotProps.row.collectorId && slotProps.row.taskStatus == '2'" :loading="transferLoading"
+              style="color: #0052d9; padding: 0px 0px 10px 0px">转派</t-button>
+            <t-button theme="primary" variant="text" class="t-button-link" @click="handleAssign(slotProps)"
+              v-else-if="!slotProps.row.collectorId" :loading="assignLoading"
+              style="color: #0052d9; padding: 0">指派</t-button>
+            <t-button theme="primary" variant="text" class="t-button-link"
+              style="color: #e34d59; padding: 0px 0px 10px 0px" @click="handleDelete(slotProps)">删除</t-button>
+            <t-button theme="primary" variant="text" class="t-button-link"
+              style="color: #0052d9; padding: 0px 0px 10px 0px" v-if="slotProps.row.auditId"
+              @click="handleViewDetails(slotProps)">详情</t-button>
           </template>
         </t-table>
       </div>
 
       <div class="pagination">
-        <t-pagination
-          showFirstAndLastPageBtn
-          :total="pagination.total"
-          :default-current="pagination.pageNo"
-          :default-page-size="pagination.pageSize"
-          @current-change="onCurrentChange"
-          @page-size-change="onPageSizeChange"
-        />
+        <t-pagination showFirstAndLastPageBtn :total="pagination.total" :default-current="pagination.pageNo"
+          :default-page-size="pagination.pageSize" @current-change="onCurrentChange"
+          @page-size-change="onPageSizeChange" />
       </div>
     </t-card>
 
     <!-- 新增/指派任务对话框 -->
-    <t-dialog
-      :header="dialogTitle"
-      :visible.sync="dialogVisible"
-      :destroyOnClose="true"
-      :onClose="onDialogClose"
-      width="50%"
-      class="custom-dialog"
-    >
+    <t-dialog :header="dialogTitle" :visible.sync="dialogVisible" :destroyOnClose="true" :onClose="onDialogClose"
+      width="50%" class="custom-dialog">
       <t-form ref="dialogForm" :data="dialogForm" :rules="dialogRules" label-align="right" :label-width="100">
         <t-row :gutter="[16, 16]">
           <t-col :span="6">
             <t-form-item label="行政区划" name="areaCode">
-              <t-tree-select
-                clearable
-                v-model="dialogForm.areaCode"
-                :treeProps="treeProps"
-                :data="areaList"
-                placeholder="请选择行政区划"
-              />
+              <t-tree-select clearable v-model="dialogForm.areaCode" :treeProps="treeProps" :data="areaList"
+                placeholder="请选择行政区划" />
             </t-form-item>
           </t-col>
           <t-col :span="6">
             <t-form-item label="采价点类型" name="stallType">
-              <t-select
-                clearable
-                v-model="dialogForm.stallType"
-                class="form-item-content"
-                :options="dialogPointTypeOptions"
-                placeholder="请选择采价点类型"
-              />
+              <t-select clearable v-model="dialogForm.stallType" class="form-item-content"
+                :options="dialogPointTypeOptions" placeholder="请选择采价点类型" />
             </t-form-item>
           </t-col>
 
           <t-col :span="6">
             <t-form-item label="采价点归属" name="stallVest">
-              <t-select
-                clearable
-                v-model="dialogForm.stallVest"
-                class="form-item-content"
-                :options="dialogPointAffiliationOptions"
-                placeholder="请选择采价点归属"
-              />
+              <t-select clearable v-model="dialogForm.stallVest" class="form-item-content"
+                :options="dialogPointAffiliationOptions" placeholder="请选择采价点归属" />
             </t-form-item>
           </t-col>
           <t-col :span="6">
             <t-form-item label="采价人员" name="collectorId">
-              <t-select
-                clearable
-                v-model="dialogForm.collectorId"
-                class="form-item-content"
-                :options="dialogPersonnelOptions"
-                placeholder="请选择采价人员"
-              />
+              <t-select clearable v-model="dialogForm.collectorId" class="form-item-content"
+                :options="dialogPersonnelOptions" placeholder="请选择采价人员" />
             </t-form-item>
           </t-col>
 
@@ -241,48 +140,29 @@
           </t-col>
           <t-col :span="6">
             <t-form-item label="品种" name="varietyId" v-if="dialogMode === 'add'">
-              <t-select
-                clearable
-                v-model="dialogForm.varietyId"
-                class="form-item-content"
-                :options="dialogCategoryOptions"
-                placeholder="请选择品种"
-              />
+              <t-select clearable v-model="dialogForm.varietyId" class="form-item-content"
+                :options="dialogCategoryOptions" placeholder="请选择品种" />
             </t-form-item>
           </t-col>
           <t-col :span="6">
             <!-- 根据采价方式动态显示不同的输入框 -->
             <template v-if="dialogForm.collectType === '1' && dialogMode === 'add'">
               <t-form-item label="占比 (%)" name="collectRate">
-                <t-input-number
-                  v-model="dialogForm.collectRate"
-                  placeholder="请输入占比"
-                  :min="1"
-                  :max="100"
-                  style="width: 100%"
-                />
+                <t-input-number v-model="dialogForm.collectRate" placeholder="请输入占比" :min="1" :max="100"
+                  style="width: 100%" />
               </t-form-item>
             </template>
             <template v-else-if="dialogForm.collectType === '2' && dialogMode === 'add'">
               <t-form-item label="采价点" name="stallId">
-                <t-select
-                  v-model="dialogForm.stallId"
-                  multiple
-                  :options="dialogPointOptions"
-                  placeholder="请选择采价点"
-                />
+                <t-select v-model="dialogForm.stallId" multiple :options="dialogPointOptions" placeholder="请选择采价点" />
               </t-form-item>
             </template>
           </t-col>
 
           <t-col :span="6">
             <t-form-item label="采价时间" name="pricingTime" v-if="dialogMode === 'add'">
-              <t-date-range-picker
-                v-model="dialogForm.pricingTime"
-                :placeholder="['开始日期', '结束日期']"
-                clearable
-                format="YYYY-MM-DD"
-              />
+              <t-date-range-picker v-model="dialogForm.pricingTime" :placeholder="['开始日期', '结束日期']" clearable
+                format="YYYY-MM-DD" />
             </t-form-item>
           </t-col>
         </t-row>
@@ -292,17 +172,24 @@
         <t-button theme="primary" @click="onDialogConfirm">确认</t-button>
       </template>
     </t-dialog>
+    <create-task-dialog :visible="createDialogVisible" @close="createDialogVisible = false"
+      @confirm="handleCreateTask" />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import { prefix } from '@/config/global';
+import CreateTaskDialog from './components/CreateTaskDialog.vue';
 
 export default Vue.extend({
   name: 'TaskAssignment',
+  components: {
+    CreateTaskDialog,
+  },
   data() {
     return {
+      createDialogVisible: false,
       prefix,
       assignLoading: false,
       transferLoading: false,
@@ -960,30 +847,38 @@ export default Vue.extend({
       this.getList();
     },
     handleAdd() {
-      this.dialogMode = 'add';
-      this.dialogTitle = '新增任务';
-      this.dialogVisible = true;
-      this.dialogForm = {
-        areaCode: '',
-        stallType: '',
-        stallVest: '',
-        varietyId: '',
-        collectType: '1', // 默认为区域占比
-        collectRate: 30,
-        stallId: '',
-        collectorId: '',
-        pricingTime: [],
-      };
-      if (this.areaList.length) {
-        this.dialogForm.areaCode = this.areaList[0].areacode;
-      }
-      // 加载对话框专用的选项数据
-      this.getDialogPointTypeOptions();
-      this.getDialogPointAffiliationOptions();
-      this.getDialogCategoryOptions();
-      this.getDialogPersonnelOptions();
-      this.getDialogPointOptions();
+      this.createDialogVisible = true;
     },
+    handleCreateTask(formData) {
+      console.log('Created task:', formData);
+      this.$message.success('创建任务成功');
+      this.getList(); // Refresh the list after creating task
+    },
+    // handleAdd() {
+    //   this.dialogMode = 'add';
+    //   this.dialogTitle = '新增任务';
+    //   this.dialogVisible = true;
+    //   this.dialogForm = {
+    //     areaCode: '',
+    //     stallType: '',
+    //     stallVest: '',
+    //     varietyId: '',
+    //     collectType: '1', // 默认为区域占比
+    //     collectRate: 30,
+    //     stallId: '',
+    //     collectorId: '',
+    //     pricingTime: [],
+    //   };
+    //   if (this.areaList.length) {
+    //     this.dialogForm.areaCode = this.areaList[0].areacode;
+    //   }
+    //   // 加载对话框专用的选项数据
+    //   this.getDialogPointTypeOptions();
+    //   this.getDialogPointAffiliationOptions();
+    //   this.getDialogCategoryOptions();
+    //   this.getDialogPersonnelOptions();
+    //   this.getDialogPointOptions();
+    // },
     getDialogPersonnelOptionsAsync(areacodes = [], stallVests = []) {
       return new Promise((resolve, reject) => {
         const params = {

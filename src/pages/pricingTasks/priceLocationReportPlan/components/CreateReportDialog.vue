@@ -46,7 +46,7 @@
                         <t-col :span="3">
                             <t-form-item label="计划周期" name="planPeriod">
                                 <t-date-range-picker v-model="formData.planPeriod" value-type="YYYY-MM-DD"
-                                    placeholder="起始-止期" />
+                                    placeholder="起始-止期" :disableDate="disablePastDates"/>
                             </t-form-item>
                         </t-col>
                         <t-col :span="3">
@@ -76,7 +76,7 @@
             <t-divider />
 
             <div class="preview-section">
-                <div class="preview-title">计划任务下发日历预览</div>
+                <div class="preview-title">上报预览</div>
                 <div class="preview-container">
                     <!-- 左侧日历选择面板 -->
                     <div class="calendar-panel">
@@ -231,6 +231,11 @@ export default Vue.extend({
             this.showCalendarPreview = false;
             this.highlightedDates = [];
             this.taskCount = 0;
+        },
+
+        disablePastDates(date) {
+            // 禁用今天之前的日期
+            return date < new Date(new Date().setHours(0, 0, 0, 0));
         },
 
         onClose() {

@@ -73,7 +73,7 @@
                         <span v-else>{{ row.customerIdentifier }}</span>
                     </template>
                     <template #status="{ row }">
-                        <t-tag v-if="row.status === '0'" theme="primary" variant="light">待开始</t-tag>
+                        <t-tag v-if="row.status === '0'" theme="default" variant="light">待开始</t-tag>
                         <t-tag v-if="row.status === '1'" theme="primary" variant="light">任务执行中</t-tag>
                         <t-tag v-if="row.status === '2'" theme="warning" variant="light">任务终止</t-tag>
                         <t-tag v-if="row.status === '3'" theme="success" variant="light">任务结束</t-tag>

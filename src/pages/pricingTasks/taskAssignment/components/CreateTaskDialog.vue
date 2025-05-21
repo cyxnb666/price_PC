@@ -1,6 +1,6 @@
 <template>
     <t-dialog header="创建采价任务" :visible.sync="visible" :destroyOnClose="true" :closeOnOverlayClick="false"
-        @close="onClose" width="1200px" top="5%" class="create-task-dialog">
+        @close="onClose" width="1000px" top="5%" class="create-task-dialog">
         <div class="dialog-content">
             <div class="form-container">
                 <t-form ref="taskForm" :data="formData" label-width="110px">
@@ -39,14 +39,9 @@
                             </t-form-item>
                         </t-col>
                         <t-col :span="3">
-                            <t-form-item label="计划周期" name="planPeriod">
-                                <t-date-range-picker v-model="formData.planPeriod" value-type="YYYY-MM-DD"
+                            <t-form-item label="采价时间" name="pricingTime">
+                                <t-date-range-picker v-model="formData.pricingTime" value-type="YYYY-MM-DD"
                                     placeholder="起始-止期" :disableDate="disablePastDates" />
-                            </t-form-item>
-                        </t-col>
-                        <t-col :span="3">
-                            <t-form-item label="上报周期(天)" name="reportPeriod">
-                                <t-input v-model="formData.reportPeriod" placeholder="输入正整数" />
                             </t-form-item>
                         </t-col>
                         <t-col :span="3">
@@ -89,23 +84,12 @@
             <t-divider />
 
             <div class="preview-section">
-                <div class="preview-title">计划任务下发预览</div>
+                <div class="preview-title">采价任务预览</div>
                 <div class="preview-container">
-                    <!-- 左侧日历选择面板 -->
-                    <div class="calendar-panel">
-                        <t-calendar v-if="showCalendarPreview" theme="card" multiple :value="highlightedDates" />
-                        <div v-else class="empty-calendar">
-                            <div class="placeholder-text">点击"预览任务"查看日历预览</div>
-                        </div>
-                    </div>
-
-                    <!-- 右侧采价任务部分 -->
+                    <!-- 预览内容区域 -->
                     <div class="task-preview" v-if="showPreview">
-                        <div class="task-preview-title">采价任务</div>
                         <div class="task-info">
-                            <span>计划周期: {{ formatDateRange(formData.planPeriod) }}</span>
-                            <span class="task-info-item">上报周期: {{ formData.reportPeriod }}天</span>
-                            <span class="task-info-item">次数: {{ taskCount }}</span>
+                            <span>采价时间: {{ formatDateRange(formData.pricingTime) }}</span>
                         </div>
                         <div class="task-preview-content">
                             <t-loading :loading="previewLoading" text="加载预览数据...">
@@ -147,7 +131,6 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import dayjs from 'dayjs';
 
 export default Vue.extend({
     name: 'CreateTaskDialog',
@@ -160,7 +143,6 @@ export default Vue.extend({
     data() {
         return {
             previewLoading: false,
-            highlightedDates: [],
             // 存储初始表单数据，用于重置
             initialFormData: {
                 areaCodes: [],
@@ -168,8 +150,7 @@ export default Vue.extend({
                 pointAffiliation: [],
                 customerType: [],
                 varietyId: '',
-                planPeriod: [],
-                reportPeriod: 2,
+                pricingTime: [],
                 pricingMethod: 'ratio',
                 ratio: 30,
                 specificPoint: [],
@@ -181,8 +162,7 @@ export default Vue.extend({
                 pointAffiliation: [],
                 customerType: [],
                 varietyId: '',
-                planPeriod: [],
-                reportPeriod: 2,
+                pricingTime: [],
                 pricingMethod: 'ratio',
                 ratio: 30,
                 specificPoint: [],
@@ -217,7 +197,6 @@ export default Vue.extend({
             ],
 
             showPreview: false, // 控制是否显示预览数据
-            showCalendarPreview: false, // 控制是否显示日历预览
             currentColumns: [], // 当前显示的列
             ratioColumns: [
                 { colKey: 'district', title: '行政区划', width: '200' },
@@ -230,7 +209,6 @@ export default Vue.extend({
                 { colKey: 'pointName', title: '采价点', width: '250' },
             ],
             previewData: [], // 实际显示的预览数据
-            taskCount: 0, // 任务次数
         };
     },
     watch: {
@@ -282,10 +260,7 @@ export default Vue.extend({
             // 深拷贝初始表单数据
             this.formData = JSON.parse(JSON.stringify(this.initialFormData));
             this.showPreview = false;
-            this.showCalendarPreview = false;
-            this.highlightedDates = [];
             this.previewData = [];
-            this.taskCount = 0;
         },
 
         onClose() {
@@ -294,35 +269,10 @@ export default Vue.extend({
             this.$emit('close');
         },
 
-        // 生成高亮日期
-        generateHighlightedDates() {
-            const [startDateStr, endDateStr] = this.formData.planPeriod;
-            const reportPeriod = parseInt(this.formData.reportPeriod, 10);
-
-            if (!startDateStr || !endDateStr || isNaN(reportPeriod) || reportPeriod <= 0) {
-                return [];
-            }
-
-            const startDate = dayjs(startDateStr);
-            const endDate = dayjs(endDateStr);
-            const dates = [];
-            let currentDate = startDate;
-
-            // 计算任务次数
-            this.taskCount = Math.floor(endDate.diff(startDate, 'day') / reportPeriod) + 1;
-
-            // 生成每隔reportPeriod天的日期
-            while (currentDate.isSame(endDate) || currentDate.isBefore(endDate)) {
-                dates.push(currentDate.format('YYYY-MM-DD'));
-                currentDate = currentDate.add(reportPeriod, 'day');
-            }
-
-            return dates;
-        },
         // 预览任务
         onPreview() {
             // 验证必填字段
-            const requiredFields = ['areaCodes', 'pointType', 'pointAffiliation', 'customerType', 'varietyId', 'planPeriod', 'reportPeriod'];
+            const requiredFields = ['areaCodes', 'pointType', 'pointAffiliation', 'customerType', 'varietyId', 'pricingTime'];
 
             // 根据采价方式添加特定必填字段
             if (this.formData.pricingMethod === 'ratio') {
@@ -348,8 +298,7 @@ export default Vue.extend({
                     pointAffiliation: '采价点归属',
                     customerType: '采价点客户标识',
                     varietyId: '品种',
-                    planPeriod: '计划周期',
-                    reportPeriod: '上报周期',
+                    pricingTime: '采价时间',
                     ratio: '占比',
                     specificPoint: '采价点'
                 };
@@ -358,13 +307,6 @@ export default Vue.extend({
                 const missingFieldNames = missingFields.map(field => fieldNameMap[field]);
 
                 this.$message.warning(`请填写必填项: ${missingFieldNames.join(', ')}`);
-                return;
-            }
-
-            // 验证上报周期是否为正整数
-            const reportPeriod = parseInt(this.formData.reportPeriod, 10);
-            if (isNaN(reportPeriod) || reportPeriod <= 0) {
-                this.$message.warning('上报周期必须是正整数');
                 return;
             }
 
@@ -379,7 +321,6 @@ export default Vue.extend({
 
             // 加载状态
             this.showPreview = true;
-            this.showCalendarPreview = false;
             this.previewLoading = true;
 
             const apiParams = {
@@ -392,11 +333,8 @@ export default Vue.extend({
                     varietyId: parseInt(this.formData.varietyId, 10),
 
                     // 日期参数
-                    collectBgnDate: this.formData.planPeriod[0],
-                    collectEndDate: this.formData.planPeriod[1],
-
-                    // 周期参数
-                    escalationCycle: parseInt(this.formData.reportPeriod, 10),
+                    collectBgnDate: this.formData.pricingTime[0],
+                    collectEndDate: this.formData.pricingTime[1],
 
                     // 转换为1-0
                     isSmsMessages: this.formData.sendSms ? "1" : "0",
@@ -416,16 +354,15 @@ export default Vue.extend({
             console.log('预览参数:', apiParams);
 
             this.$request
-                .post('/web/taskScheduling/previewTheTaskSchedule', apiParams)
+                .post('/web/collectPriceTask/previewCollectPriceTask', apiParams)
                 .then((res) => {
                     if (res.retCode === 200) {
                         const previewData = res.retData;
-                        this.taskCount = previewData.frequency || 0;
 
                         if (this.formData.pricingMethod === 'ratio') {
                             this.currentColumns = this.ratioColumns;
 
-                            this.previewData = (previewData.previews || []).map((item, index) => ({
+                            this.previewData = (previewData || []).map((item, index) => ({
                                 id: index + 1,
                                 district: item.areaname || '',
                                 ratio: item.collectRate || 0,
@@ -434,16 +371,12 @@ export default Vue.extend({
                             }));
                         } else {
                             this.currentColumns = this.specificColumns;
-                            this.previewData = (previewData.previews || []).map((item, index) => ({
+                            this.previewData = (previewData || []).map((item, index) => ({
                                 id: index + 1,
                                 district: item.areaname || '',
                                 pointName: item.stallName || ''
                             }));
                         }
-
-                        // 生成高亮日期
-                        this.highlightedDates = this.generateHighlightedDates();
-                        this.showCalendarPreview = true;
 
                         // 如果没有数据就显示提示
                         if (this.previewData.length === 0) {
@@ -452,14 +385,12 @@ export default Vue.extend({
                     } else {
                         this.$message.error(res.retMsg || '获取预览数据失败');
                         this.showPreview = false;
-                        this.showCalendarPreview = false;
                     }
                 })
                 .catch((e) => {
                     console.error(e);
                     this.$message.error('获取预览数据失败');
                     this.showPreview = false;
-                    this.showCalendarPreview = false;
                 })
                 .finally(() => {
                     this.previewLoading = false;
@@ -467,7 +398,7 @@ export default Vue.extend({
         },
 
         onConfirm() {
-            const requiredFields = ['areaCodes', 'pointType', 'pointAffiliation', 'customerType', 'varietyId', 'planPeriod', 'reportPeriod'];
+            const requiredFields = ['areaCodes', 'pointType', 'pointAffiliation', 'customerType', 'varietyId', 'pricingTime'];
 
             if (this.formData.pricingMethod === 'ratio') {
                 requiredFields.push('ratio');
@@ -490,8 +421,7 @@ export default Vue.extend({
                     pointAffiliation: '采价点归属',
                     customerType: '采价点客户标识',
                     varietyId: '品种',
-                    planPeriod: '计划周期',
-                    reportPeriod: '上报周期',
+                    pricingTime: '采价时间',
                     ratio: '占比',
                     specificPoint: '采价点'
                 };
@@ -499,13 +429,6 @@ export default Vue.extend({
                 const missingFieldNames = missingFields.map(field => fieldNameMap[field]);
 
                 this.$message.warning(`请填写必填项: ${missingFieldNames.join(', ')}`);
-                return;
-            }
-
-            // 验证上报周期是否为正整数
-            const reportPeriod = parseInt(this.formData.reportPeriod, 10);
-            if (isNaN(reportPeriod) || reportPeriod <= 0) {
-                this.$message.warning('上报周期必须是正整数');
                 return;
             }
 
@@ -525,9 +448,8 @@ export default Vue.extend({
                     stallVest: this.formData.pointAffiliation,
                     customerIdentification: this.formData.customerType,
                     varietyId: parseInt(this.formData.varietyId, 10),
-                    collectBgnDate: this.formData.planPeriod[0],
-                    collectEndDate: this.formData.planPeriod[1],
-                    escalationCycle: parseInt(this.formData.reportPeriod, 10),
+                    collectBgnDate: this.formData.pricingTime[0],
+                    collectEndDate: this.formData.pricingTime[1],
                     isSmsMessages: this.formData.sendSms ? "1" : "0",
                     collectType: this.formData.pricingMethod === 'ratio' ? "1" : "2",
                 }
@@ -542,12 +464,12 @@ export default Vue.extend({
             console.log('提交参数:', apiParams);
 
             this.$request
-                .post('/web/taskScheduling/saveTaskScheduling', apiParams)
+                .post('/web/collectPriceTask/saveCollectPriceTask', apiParams)
                 .then((res) => {
                     if (res.retCode === 200) {
                         this.$message.success('创建任务成功');
                         this.$emit('confirm', this.formData);
-                        this.onClose();
+                        this.onClose(); // 关闭对话框
                     } else {
                         this.$message.error(res.retMsg || '创建任务失败');
                     }
@@ -639,7 +561,7 @@ export default Vue.extend({
         getPointOptions() {
             const params = {
                 condition: {
-                    stallTypes: this.formData.pointType || [],
+                    stallType: this.formData.pointType || [],
                     stallVests: this.formData.pointAffiliation || [],
                     areacodes: this.formData.areaCodes || [],
                 },
@@ -743,47 +665,14 @@ export default Vue.extend({
         gap: 20px;
         height: 400px; // 固定高度
 
-        .calendar-panel {
-            flex: 0 0 33%;
-            height: 100%; // 设置高度占满父容器
-
-            :deep(.t-calendar) {
-                border: 1px solid #e7e7e7;
-                border-radius: 4px;
-                box-shadow: none;
-                width: 100%;
-                height: 100%;
-            }
-
-            .empty-calendar {
-                border: 1px solid #e7e7e7;
-                border-radius: 4px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background-color: #f9f9f9;
-                height: 100%;
-
-                .placeholder-text {
-                    color: #999;
-                    font-size: 14px;
-                }
-            }
-        }
-
         .task-preview {
-            flex: 0 0 65%;
+            flex: 1;
             border: 1px solid #e7e7e7;
             border-radius: 4px;
             padding: 16px;
             display: flex;
             flex-direction: column;
             height: 100%;
-
-            .task-preview-title {
-                font-weight: bold;
-                margin-bottom: 16px;
-            }
 
             .task-info {
                 margin-bottom: 16px;
@@ -819,7 +708,7 @@ export default Vue.extend({
         }
 
         .empty-preview {
-            flex: 0 0 65%;
+            flex: 1;
             border: 1px solid #e7e7e7;
             border-radius: 4px;
             display: flex;
