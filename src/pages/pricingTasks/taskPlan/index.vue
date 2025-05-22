@@ -288,9 +288,9 @@ export default Vue.extend({
             const params = {
                 condition: {
                     areaCodes: this.formData.areaCodes || [],
-                    stallType: this.formData.pointType,
-                    stallVest: this.formData.pointAffiliation,
-                    customerIdentification: this.formData.customerIdentification,
+                    stallType: this.formData.pointType ? [this.formData.pointType] : [],
+                    stallVest: this.formData.pointAffiliation ? [this.formData.pointAffiliation] : [],
+                    customerIdentification: this.formData.customerIdentification ? [this.formData.customerIdentification] : [],
                     stallId: this.formData.pointId ? [this.formData.pointId] : [],
                     varietyId: this.formData.varietyId,
                     taskStatus: this.formData.taskStatus,

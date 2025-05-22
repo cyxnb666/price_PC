@@ -48,6 +48,12 @@
                 placeholder="请选择任务状态" />
             </t-form-item>
           </t-col>
+          <t-col :span="3">
+            <t-form-item label="客户标识" name="customerIdentification">
+              <t-select clearable v-model="formData.customerIdentification" class="form-item-content"
+                :options="customerIdentifierOptions" placeholder="请选择客户标识" />
+            </t-form-item>
+          </t-col>
         </t-row>
 
         <t-row :gutter="20" style="margin-top: 16px">
@@ -75,7 +81,12 @@
             <t-tag v-if="row.taskStatus === '4'" theme="primary" variant="light">待审核</t-tag>
             <t-tag v-if="row.taskStatus === '5'" theme="success" variant="light">已完成</t-tag>
           </template>
-
+          <template #customerIdentifier="{ row }">
+            <span v-if="row.customerIdentifier.includes('客户')">
+              <span style="color: #e34d59">{{ row.customerIdentifier }}</span>
+            </span>
+            <span v-else>{{ row.customerIdentifier }}</span>
+          </template>
           <template #op="slotProps">
             <t-button theme="primary" variant="text" class="t-button-link" @click="handleTransfer(slotProps)"
               v-if="slotProps.row.collectorId && slotProps.row.taskStatus == '2'" :loading="transferLoading"
@@ -223,6 +234,18 @@ export default Vue.extend({
           colKey: 'varietyName',
         },
         {
+          title: '采价点客户标识',
+          width: 150,
+          ellipsis: true,
+          colKey: 'customerIdentifier',
+        },
+        {
+          title: '任务类型',
+          width: 150,
+          ellipsis: true,
+          colKey: 'taskType',
+        },
+        {
           title: '采价点类型',
           width: 110,
           ellipsis: true,
@@ -274,6 +297,7 @@ export default Vue.extend({
       ],
       formData: {
         areaCode: '',
+        customerIdentification: '',
         stallType: '',
         stallVest: '',
         stallId: '',
@@ -331,6 +355,11 @@ export default Vue.extend({
         { label: '采价中', value: '3' },
         { label: '待审核', value: '4' },
         { label: '已完成', value: '5' },
+      ],
+      customerIdentifierOptions: [
+        { label: '全部', value: '' },
+        { label: '客户', value: '1' },
+        { label: '非客户', value: '0' },
       ],
       pagination: {
         pageSize: 10,
@@ -793,6 +822,7 @@ export default Vue.extend({
           areaCode: this.formData.areaCode,
           stallType: this.formData.stallType,
           stallVest: this.formData.stallVest,
+          customerIdentification: this.formData.customerIdentification,
           stallId: this.formData.stallId ? [this.formData.stallId] : [],
           varietyId: this.formData.varietyId,
           collectorId: this.formData.collectorId,
@@ -816,6 +846,8 @@ export default Vue.extend({
                 stallTypeName: item.stallTypeName || '',
                 stallVest: item.stallVest,
                 stallVestName: item.stallVestName || '',
+                customerIdentifier: this.formatCustomerIdentifier(item.customerIdentification),
+                taskType: item.taskType || '',
                 collectType: item.collectType || '',
                 pricingPoint: item.stallName || '',
                 pricingTime: `${item.collectBgnDate || ''}-${item.collectEndDate || ''}`,
@@ -837,6 +869,12 @@ export default Vue.extend({
         .finally(() => {
           this.dataLoading = false;
         });
+    },
+    formatCustomerIdentifier(value) {
+      if (value === '1') return '客户';
+      if (value === '0') return '非客户';
+      if (value === '') return '客户、非客户';
+      return '';
     },
     onPageSizeChange(size) {
       this.pagination.pageSize = size;
