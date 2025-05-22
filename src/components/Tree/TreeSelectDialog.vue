@@ -31,15 +31,17 @@
         <!-- 下拉对话框 -->
         <t-dialog :visible.sync="dialogVisible" :header="title" :width="width" :footer="true" @confirm="handleConfirm"
             @close="handleCancel">
-            <div class="tree-dialog-content">
-                <virtual-tree ref="virtualTree" :data="data" :value="tempSelectedKeys" :multiple="multiple"
-                    :searchable="true" :placeholder="placeholder" :height="treeHeight" @change="handleTreeChange" />
-            </div>
+            <t-loading :loading="loading" text="正在加载数据..." :style="{ minHeight: loading ? '200px' : 'auto' }">
+                <div class="tree-dialog-content">
+                    <virtual-tree v-if="!loading" ref="virtualTree" :data="data" :value="tempSelectedKeys" :multiple="multiple"
+                        :searchable="true" :placeholder="placeholder" :height="treeHeight" @change="handleTreeChange" />
+                </div>
+            </t-loading>
 
             <template #footer>
                 <div class="dialog-footer">
                     <t-button theme="default" @click="handleCancel">取消</t-button>
-                    <t-button theme="primary" @click="handleConfirm">确认</t-button>
+                    <t-button theme="primary" :disabled="loading" @click="handleConfirm">确认</t-button>
                 </div>
             </template>
         </t-dialog>
@@ -84,6 +86,10 @@ export default {
             default: 400
         },
         disabled: {
+            type: Boolean,
+            default: false
+        },
+        loading: {
             type: Boolean,
             default: false
         },

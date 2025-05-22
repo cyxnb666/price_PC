@@ -81,6 +81,10 @@
             <t-tag v-if="row.taskStatus === '4'" theme="primary" variant="light">待审核</t-tag>
             <t-tag v-if="row.taskStatus === '5'" theme="success" variant="light">已完成</t-tag>
           </template>
+          <template #taskType="{ row }">
+            <p v-if="row.taskType === '1'">一次性</p>
+            <p v-if="row.taskType === '2'">周期性</p>
+          </template>
           <template #customerIdentifier="{ row }">
             <span v-if="row.customerIdentifier.includes('客户')">
               <span style="color: #e34d59">{{ row.customerIdentifier }}</span>

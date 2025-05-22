@@ -6,7 +6,7 @@
           <t-col :span="3">
             <t-form-item label="行政区划" name="areaCode">
               <tree-select-dialog v-model="formData.areaCode" :data="areaList" :placeholder="'默认'"
-                :multiple="true" title="选择行政区划" :width="800" :treeHeight="500" @change="handleAreaChange" />
+                :multiple="true" title="选择行政区划" :width="800" :treeHeight="500" :loading="areaLoading" @change="handleAreaChange" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
@@ -93,6 +93,7 @@ export default Vue.extend({
     return {
       prefix,
       dataLoading: false,
+      areaLoading: false,
       loading: false,
       data: [],
       columns: [
@@ -222,8 +223,7 @@ export default Vue.extend({
       this.formData.areaCode = value;
     },
     getAreaList() {
-      // 显示加载状态
-      this.dataLoading = true;
+      this.areaLoading = true;
 
       this.$request
         .get('/web/area/selectWholeAreaTrees')
@@ -231,14 +231,12 @@ export default Vue.extend({
           if (res.retCode === 200) {
             const originalData = res.retData || [];
 
-            // 创建一个新的"全部"作为顶级父节点
             const rootNode = {
               areaname: '全部',
-              areacode: 'all', // 这个值不会被传递到后端
-              children: originalData // 将原始数据作为子节点
+              areacode: 'all',
+              children: originalData
             };
 
-            // 使用包含"全部"父节点的新结构
             this.areaList = [rootNode];
           } else {
             this.$message.error(res.retMsg || '获取行政区划数据失败');
@@ -249,7 +247,7 @@ export default Vue.extend({
           this.$message.error('获取行政区划数据出错');
         })
         .finally(() => {
-          this.dataLoading = false;
+          this.areaLoading = false;
         });
     },
     onSearch() {

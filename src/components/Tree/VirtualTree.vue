@@ -1,4 +1,3 @@
-<!-- src/components/VirtualTree.vue -->
 <template>
     <div class="virtual-tree-container" ref="treeContainer">
         <div class="virtual-tree-search" v-if="searchable">
