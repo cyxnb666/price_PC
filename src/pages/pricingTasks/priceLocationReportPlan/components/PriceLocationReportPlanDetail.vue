@@ -391,7 +391,7 @@ export default Vue.extend({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .section-title {
@@ -472,7 +472,7 @@ export default Vue.extend({
 .actions-container {
   display: flex;
   justify-content: center;
-  margin-top: 32px;
+  margin-top: 12px;
 }
 
 .t-button-link {

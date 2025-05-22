@@ -5,7 +5,7 @@
                 <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
                     <t-col :span="3">
                         <t-form-item label="行政区划" name="areaCodes">
-                            <t-tree-select clearable v-model="formData.areaCodes" class="form-item-content"
+                            <t-tree-select filterable clearable v-model="formData.areaCodes" class="form-item-content"
                                 :data="areaList" :treeProps="treeProps" placeholder="请选择行政区划" multiple />
                         </t-form-item>
                     </t-col>
@@ -498,8 +498,7 @@ export default Vue.extend({
             });
         },
         handleTerminate({ row }) {
-            // 弹出确认对话框
-            this.$dialog.confirm({
+            const confirmDialog = this.$dialog.confirm({
                 header: '终止计划',
                 body: '确定要终止该计划吗？终止后无法恢复。',
                 confirmBtn: {
@@ -511,10 +510,17 @@ export default Vue.extend({
                     theme: 'default',
                 },
                 onConfirm: () => {
-                    this.$request.post('/web/taskScheduling/programTerminationStop', row.id)
+                    const params = {
+                        condition: {
+                            primaryKey: row.id
+                        }
+                    };
+
+                    this.$request.post('/web/taskScheduling/programTerminationStop', params)
                         .then(res => {
                             if (res.retCode === 200) {
                                 this.$message.success('计划已成功终止');
+                                confirmDialog.hide();
                                 this.getList();
                             } else {
                                 this.$message.error(res.retMsg || '终止计划失败');
@@ -527,9 +533,9 @@ export default Vue.extend({
                 },
             });
         },
+
         handleDelete({ row }) {
-            // 弹出确认对话框
-            this.$dialog.confirm({
+            const confirmDialog = this.$dialog.confirm({
                 header: '删除计划',
                 body: '确定要删除该计划吗？删除后无法恢复。',
                 confirmBtn: {
@@ -541,12 +547,17 @@ export default Vue.extend({
                     theme: 'default',
                 },
                 onConfirm: () => {
-                    this.$request.delete('/web/taskScheduling/programTerminationDelete', {
-                        data: row.id
-                    })
+                    const params = {
+                        condition: {
+                            primaryKey: row.id
+                        }
+                    };
+
+                    this.$request.post('/web/taskScheduling/programTerminationDelete', params)
                         .then(res => {
                             if (res.retCode === 200) {
                                 this.$message.success('计划已成功删除');
+                                confirmDialog.hide();
                                 this.getList();
                             } else {
                                 this.$message.error(res.retMsg || '删除计划失败');

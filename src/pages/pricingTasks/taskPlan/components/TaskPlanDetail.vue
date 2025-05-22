@@ -98,7 +98,9 @@
                 <t-col :span="4" v-if="pricingMethod === 'specific'">
                   <div class="field-item">
                     <label>采价点</label>
-                    <t-input v-model="basicInfo.specificPoint" disabled placeholder="" />
+                    <t-tooltip :content="basicInfo.specificPoint" placement="top">
+                      <t-input v-model="basicInfo.specificPoint" disabled placeholder="" />
+                    </t-tooltip>
                   </div>
                 </t-col>
                 <t-col :span="4">
@@ -143,8 +145,8 @@
               <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
                 <t-col :span="3">
                   <t-form-item label="行政区划" name="areaCode">
-                    <t-tree-select clearable v-model="filterParams.areaCode" class="form-item-content" :data="areaList"
-                      :treeProps="treeProps" placeholder="请选择行政区划" multiple />
+                    <t-tree-select filterable clearable v-model="filterParams.areaCode" class="form-item-content"
+                      :data="areaList" :treeProps="treeProps" placeholder="请选择行政区划" multiple />
                   </t-form-item>
                 </t-col>
                 <t-col :span="3" v-if="pricingMethod === 'specific'">
@@ -181,12 +183,11 @@
                 </template>
 
                 <template #status="{ row }">
-                  <t-tag v-if="row.status === '待采价'" theme="primary" variant="light">待采价</t-tag>
-                  <t-tag v-else-if="row.status === '采价中'" theme="warning" variant="light">采价中</t-tag>
-                  <t-tag v-else-if="row.status === '已完成'" theme="success" variant="light">已完成</t-tag>
-                  <t-tag v-else-if="row.status === '已终止'" theme="danger" variant="light">已终止</t-tag>
+                  <t-tag v-if="row.status === '0'" theme="primary" variant="light">待开始</t-tag>
+                  <t-tag v-else-if="row.status === '1'" theme="warning" variant="light">任务执行中</t-tag>
+                  <t-tag v-else-if="row.status === '2'" theme="success" variant="light">任务终止</t-tag>
+                  <t-tag v-else-if="row.status === '3'" theme="danger" variant="light">任务结束</t-tag>
                 </template>
-
                 <template #op="slotProps">
                   <t-button theme="primary" variant="text" class="t-button-link"
                     style="color: #0052d9; padding: 0px 0px 10px 0px"
@@ -208,17 +209,6 @@
         </div>
       </t-loading>
     </t-card>
-
-    <!-- 确认终止计划的对话框 -->
-    <t-dialog header="终止计划" :visible.sync="terminateDialogVisible" :closeOnOverlayClick="false">
-      <template>
-        <p>确定要终止该计划吗？终止后无法恢复。</p>
-      </template>
-      <template #footer>
-        <t-button theme="default" @click="terminateDialogVisible = false">取消</t-button>
-        <t-button theme="danger" @click="confirmTerminate">确定终止</t-button>
-      </template>
-    </t-dialog>
 
     <!-- 行政区划查看弹窗 -->
     <t-dialog header="查看行政区划" :visible.sync="regionDialogVisible" :closeOnOverlayClick="false" width="600px">
@@ -252,32 +242,36 @@ export default Vue.extend({
   },
   data() {
     return {
-      regionDialogVisible: false, // 控制行政区划查看弹窗
-      areaList: [], // 行政区划树形数据
+      regionDialogVisible: false,
+      areaList: [],
       selectedAreaCodes: [],
       loading: false,
       tableLoading: false,
       isCollapsed: false,
-      pricingMethod: 'ratio', // 'ratio'表示区域占比, 'specific'表示指定采价点
-      terminateDialogVisible: false,
+      pricingMethod: 'ratio',
 
       basicInfo: {
-        planId: 'JH202501010001',
-        adminRegion: '四川-成都-xx镇',
-        pointType: '农户',
-        pointAffiliation: '保司',
-        customerIdentifier: '客户、非客户',
-        category: '柑橘',
-        planPeriod: '2025/3/12-2025/5/15',
-        reportPeriod: '2',
+        planId: '',
+        adminRegion: '',
+        pointType: '',
+        pointAffiliation: '',
+        customerIdentifier: '',
+        category: '',
+        planPeriod: '',
+        reportPeriod: '',
         sendSmsReminder: true,
-        ratio: '30',
-        specificPoint: '点击查看已选采价点',
-        creator: '王五',
-        createTime: '2025-03-10 10:30:22',
+        ratio: '',
+        specificPoint: '',
+        creator: '',
+        createTime: '',
         endTime: '',
-        canTerminate: true
+        canTerminate: false
       },
+
+      // 用于转换的选项数组
+      pointTypeOptions: [],
+      pointAffiliationOptions: [],
+      pointOptions: [{ label: '全部', value: '' }],
 
       smsReminderOptions: [
         { label: '是', value: true },
@@ -290,27 +284,10 @@ export default Vue.extend({
       },
       taskStatusOptions: [
         { label: '全部', value: '' },
-        { label: '待采价', value: '待采价' },
-        { label: '采价中', value: '采价中' },
-        { label: '已完成', value: '已完成' },
-        { label: '已终止', value: '已终止' }
-      ],
-      areaOptions: [
-        { label: '四川-成都-xx镇', value: 'SC-CD-XX' },
-        { label: '四川-自贡-xx镇', value: 'SC-ZG-XX' }
-      ],
-
-      pointOptions: [
-        { label: '雨祖果蔬', value: 'P1' },
-        { label: '成都果蔬批发', value: 'P2' }
-      ],
-
-      taskStatusOptions: [
-        { label: '全部', value: '' },
-        { label: '待采价', value: '待采价' },
-        { label: '采价中', value: '采价中' },
-        { label: '已完成', value: '已完成' },
-        { label: '已终止', value: '已终止' }
+        { label: '待开始', value: '0' },
+        { label: '任务执行中', value: '1' },
+        { label: '任务终止', value: '2' },
+        { label: '任务结束', value: '3' },
       ],
 
       // 表格配置
@@ -337,15 +314,12 @@ export default Vue.extend({
         { title: '操作', align: 'left', fixed: 'right', width: 100, colKey: 'op' }
       ],
 
-      // 区域占比的表格数据
       ratioData: [],
-
-      // 指定采价点的表格数据
       specificData: [],
 
       pagination: {
         pageSize: 10,
-        total: 4,
+        total: 0,
         pageNo: 1,
       },
       treeProps: {
@@ -368,9 +342,17 @@ export default Vue.extend({
       return this.pricingMethod === 'ratio' ? this.ratioData : this.specificData;
     }
   },
+  watch: {
+    'filterParams.areaCode': function (newVal) {
+      this.getPointOptions();
+    },
+  },
   mounted() {
-    this.fetchData();
     this.getAreaList();
+    this.getPointTypeOptions();
+    this.getPointAffiliationOptions();
+    this.getPointOptions();
+    this.fetchData();
   },
   methods: {
     fetchData() {
@@ -386,10 +368,34 @@ export default Vue.extend({
         .post('/web/taskScheduling/taskScheduleDetails', params)
         .then((res) => {
           if (res.retCode === 200) {
-            // 根据获取的数据设置pricingMethod
-            this.pricingMethod = this.$route.query.pricingMethod as string || 'ratio';
+            const data = res.retData;
 
-            // 获取基础信息后，立即获取任务列表
+            // 设置采价方式
+            this.pricingMethod = data.collectType === '1' ? 'ratio' : 'specific';
+
+            // 设置基础信息
+            this.basicInfo = {
+              planId: data.taskSchedulingId || '',
+              adminRegion: this.getAreaNameFromCode(data.areacode) || data.areacode || '',
+              pointType: this.getPointTypeNames(data.stallTypes || []),
+              pointAffiliation: this.getPointAffiliationNames(data.stallVests || []),
+              customerIdentifier: this.getCustomerIdentifierNames(data.customerIdentifications || []),
+              category: data.varietyName || '',
+              planPeriod: `${data.collectBgnDate || ''}至${data.collectEndDate || ''}`,
+              reportPeriod: data.escalationCycle ? data.escalationCycle.toString() : '',
+              sendSmsReminder: data.isSmsMessages === '1',
+              ratio: data.collectRate ? data.collectRate.toString() : '0',
+              specificPoint: this.getPointNames(data.stallIds || []),
+              creator: data.collectorName || '',
+              createTime: data.createTime || '',
+              endTime: data.endTime || '',
+              canTerminate: data.taskStatus === '1' // 只有执行中的任务可以终止
+            };
+
+            // 设置行政区划选中状态
+            this.selectedAreaCodes = data.areacodes || [];
+
+            // 获取任务列表
             this.handleSearch(true);
           } else {
             this.$message.error(res.retMsg || '获取任务详情失败');
@@ -404,8 +410,71 @@ export default Vue.extend({
         });
     },
 
-    handleViewRegion() {
-      this.regionDialogVisible = true;
+    // 根据区域代码获取区域名称
+    getAreaNameFromCode(areacode) {
+      const findNodeName = (nodes, code) => {
+        if (!nodes || !nodes.length) return null;
+
+        for (const node of nodes) {
+          if (node.areacode === code) {
+            return node.areaname;
+          }
+          if (node.children && node.children.length) {
+            const childName = findNodeName(node.children, code);
+            if (childName) return childName;
+          }
+        }
+        return null;
+      };
+
+      return findNodeName(this.areaList, areacode);
+    },
+
+    // 获取采价点类型名称
+    getPointTypeNames(stallTypes) {
+      if (!stallTypes || stallTypes.length === 0) return '';
+
+      const names = stallTypes.map(code => {
+        const option = this.pointTypeOptions.find(opt => opt.value === code);
+        return option ? option.label : code;
+      });
+
+      return names.join('、');
+    },
+
+    // 获取采价点归属名称
+    getPointAffiliationNames(stallVests) {
+      if (!stallVests || stallVests.length === 0) return '';
+
+      const names = stallVests.map(code => {
+        const option = this.pointAffiliationOptions.find(opt => opt.value === code);
+        return option ? option.label : code;
+      });
+
+      return names.join('、');
+    },
+
+    // 获取客户标识名称
+    getCustomerIdentifierNames(customerIdentifications) {
+      if (!customerIdentifications || customerIdentifications.length === 0) return '';
+
+      const names = customerIdentifications.map(code => {
+        return code === '1' ? '客户' : code === '0' ? '非客户' : code;
+      });
+
+      return names.join('、');
+    },
+
+    // 获取采价点名称
+    getPointNames(stallIds) {
+      if (!stallIds || stallIds.length === 0) return '';
+
+      const names = stallIds.map(id => {
+        const option = this.pointOptions.find(opt => opt.value === id);
+        return option ? option.label : id;
+      });
+
+      return names.join('、');
     },
 
     getAreaList() {
@@ -424,8 +493,119 @@ export default Vue.extend({
         });
     },
 
+    getPointTypeOptions() {
+      const params = {
+        condition: {
+          dictType: 'STALL_TYPE',
+        },
+      };
+
+      this.$request
+        .post('/web/dict/queryTypeDicts', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.pointTypeOptions = [];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.dictValue,
+                value: item.dictCode,
+              }));
+
+              this.pointTypeOptions = [...this.pointTypeOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取采价点类型失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取采价点类型失败');
+        });
+    },
+
+    getPointAffiliationOptions() {
+      const params = {
+        condition: {
+          dictType: 'VEST_TYPE',
+        },
+      };
+
+      this.$request
+        .post('/web/dict/queryTypeDicts', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.pointAffiliationOptions = [];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.dictValue,
+                value: item.dictCode,
+              }));
+
+              this.pointAffiliationOptions = [...this.pointAffiliationOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取采价点归属失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取采价点归属失败');
+        });
+    },
+
+    getPointOptions() {
+      const params = {
+        condition: {
+          stallTypes: [],
+          stallVests: [],
+          areacodes: this.filterParams.areaCode || [],
+        },
+      };
+
+      this.$request
+        .post('/web/stall/selectChooseStalls', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.pointOptions = [{ label: '全部', value: '' }];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.stallName,
+                value: item.stallId,
+              }));
+
+              this.pointOptions = [...this.pointOptions, ...options];
+            }
+
+            if (this.filterParams.pointId && !this.pointOptions.some((option) => option.value === this.filterParams.pointId)) {
+              this.filterParams.pointId = '';
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取采价点数据失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取采价点数据失败');
+        });
+    },
+
+    handleViewRegion() {
+      this.regionDialogVisible = true;
+    },
+
     toggleCollapse() {
       this.isCollapsed = !this.isCollapsed;
+    },
+
+    formatDateRange(startDate, endDate) {
+        if (!startDate && !endDate) return '';
+        if (!startDate) return endDate;
+        if (!endDate) return startDate;
+        if (startDate === endDate) return startDate;
+        return `${startDate} 至 ${endDate}`;
     },
 
     handleSearch(isSearch = false) {
@@ -455,7 +635,7 @@ export default Vue.extend({
                 return {
                   id: item.taskId || '',
                   adminRegion: item.areaname || '',
-                  collectTime: item.collectTime || '',
+                  collectTime: this.formatDateRange(item.collectBgnDate, item.collectEndDate),
                   collector: item.collectorName || '',
                   status: item.taskStatus || '',
                 };
@@ -466,7 +646,7 @@ export default Vue.extend({
                   id: item.taskId || '',
                   adminRegion: item.areaname || '',
                   pointName: item.stallName || '',
-                  collectTime: item.collectTime || '',
+                  collectTime: this.formatDateRange(item.collectBgnDate, item.collectEndDate),
                   collector: item.collectorName || '',
                   status: item.taskStatus || '',
                 };
@@ -485,28 +665,6 @@ export default Vue.extend({
         .finally(() => {
           this.tableLoading = false;
         });
-    },
-    updateTableData(records) {
-      // 根据实际API返回的数据结构来映射表格数据
-      // 这里先使用示例数据结构，需要根据实际API返回调整
-      if (this.pricingMethod === 'ratio') {
-        this.ratioData = records.map(item => ({
-          id: item.taskId || item.id,
-          adminRegion: item.areaname || item.adminRegion,
-          collectTime: item.collectTime || '',
-          collector: item.collectorName || item.collector,
-          status: item.taskStatus || item.status
-        }));
-      } else {
-        this.specificData = records.map(item => ({
-          id: item.taskId || item.id,
-          adminRegion: item.areaname || item.adminRegion,
-          pointName: item.stallName || item.pointName,
-          collectTime: item.collectTime || '',
-          collector: item.collectorName || item.collector,
-          status: item.taskStatus || item.status
-        }));
-      }
     },
 
     handleReset() {
@@ -529,23 +687,84 @@ export default Vue.extend({
     },
 
     handleViewTaskDetail(row) {
-      console.log('查看任务详情', row);
-      // 实际中可以跳转到任务详情页面
+      this.$router.push({
+        name: 'marketPriceReportingDetail',
+        params: { id: row.id }
+      });
     },
 
     handleTerminate() {
-      this.terminateDialogVisible = true;
+      const confirmDialog = this.$dialog.confirm({
+        header: '终止计划',
+        body: '确定要终止该计划吗？终止后无法恢复。',
+        confirmBtn: {
+          content: '确定',
+          theme: 'danger',
+        },
+        cancelBtn: {
+          content: '取消',
+          theme: 'default',
+        },
+        onConfirm: () => {
+          const params = {
+            condition: {
+              primaryKey: this.id
+            }
+          };
+
+          this.$request
+            .post('/web/taskScheduling/programTerminationStop', params)
+            .then(res => {
+              if (res.retCode === 200) {
+                this.$message.success('计划已成功终止');
+                confirmDialog.hide();
+
+                // 更新基础信息状态
+                this.basicInfo.canTerminate = false;
+                this.basicInfo.endTime = new Date().toLocaleString();
+
+                // 刷新任务列表
+                this.handleSearch();
+              } else {
+                this.$message.error(res.retMsg || '终止计划失败');
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              this.$message.error('终止计划失败');
+            });
+        },
+      });
     },
 
     confirmTerminate() {
-      // 实际中调用API终止计划
-      console.log('确认终止计划', this.id);
-      this.terminateDialogVisible = false;
-      this.$message.success('计划已成功终止');
+      const params = {
+        condition: {
+          primaryKey: this.id
+        }
+      };
 
-      // 更新基础信息
-      this.basicInfo.canTerminate = false;
-      this.basicInfo.endTime = '2025-03-17 15:30:22';
+      this.$request
+        .post('/web/taskScheduling/programTerminationStop', params)
+        .then(res => {
+          if (res.retCode === 200) {
+            this.$message.success('计划已成功终止');
+            this.terminateDialogVisible = false;
+
+            // 更新基础信息状态
+            this.basicInfo.canTerminate = false;
+            this.basicInfo.endTime = new Date().toLocaleString();
+
+            // 刷新任务列表
+            this.handleSearch();
+          } else {
+            this.$message.error(res.retMsg || '终止计划失败');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          this.$message.error('终止计划失败');
+        });
     },
 
     goBack() {
@@ -568,7 +787,7 @@ export default Vue.extend({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .section-title {
@@ -576,6 +795,7 @@ export default Vue.extend({
   align-items: center;
   font-size: 16px;
   font-weight: bold;
+  margin-bottom: 12px;
 
   .section-title-marker {
     width: 4px;
@@ -631,7 +851,7 @@ export default Vue.extend({
 .actions-container {
   display: flex;
   justify-content: center;
-  margin-top: 32px;
+  margin-top: 12px;
 }
 
 .t-button-link {

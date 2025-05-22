@@ -139,7 +139,7 @@
 
         <template #footer>
             <div class="dialog-footer">
-                <t-button theme="primary" @click="onConfirm">确定创建</t-button>
+                <t-button theme="primary" :loading="confirmLoading" @click="onConfirm">确定创建</t-button>
             </div>
         </template>
     </t-dialog>
@@ -159,6 +159,7 @@ export default Vue.extend({
     },
     data() {
         return {
+            confirmLoading: false,
             previewLoading: false,
             highlightedDates: [],
             // 存储初始表单数据，用于重置
@@ -518,6 +519,7 @@ export default Vue.extend({
                 }
             }
 
+            this.confirmLoading = true;
             const apiParams = {
                 condition: {
                     areaCodes: this.formData.areaCodes,
@@ -555,7 +557,10 @@ export default Vue.extend({
                 .catch((e) => {
                     console.error(e);
                     this.$message.error('创建任务失败');
-                });
+                })
+                .finally(() => {
+                    this.confirmLoading = false;
+                });;
         },
 
         getAreaList() {

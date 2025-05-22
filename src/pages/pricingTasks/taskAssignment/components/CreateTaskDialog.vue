@@ -120,7 +120,8 @@
 
         <template #footer>
             <div class="dialog-footer">
-                <t-button theme="primary" @click="onConfirm">确定创建</t-button>
+                <t-button theme="primary" @click="onConfirm" :loading="confirmLoading">确定创建</t-button>
+
             </div>
         </template>
     </t-dialog>
@@ -139,6 +140,7 @@ export default Vue.extend({
     },
     data() {
         return {
+            confirmLoading: false,
             previewLoading: false,
             // 存储初始表单数据，用于重置
             initialFormData: {
@@ -461,6 +463,7 @@ export default Vue.extend({
 
             console.log('提交参数:', apiParams);
 
+            this.confirmLoading = true;
             this.$request
                 .post('/web/taskScheduling/saveTaskScheduling', apiParams)
                 .then((res) => {
@@ -474,6 +477,9 @@ export default Vue.extend({
                 .catch((e) => {
                     console.error(e);
                     this.$message.error('创建任务失败');
+                })
+                .finally(() => {
+                    this.confirmLoading = false;
                 });
         },
 
