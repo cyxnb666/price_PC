@@ -88,9 +88,6 @@
                 <div class="preview-container">
                     <!-- 预览内容区域 -->
                     <div class="task-preview" v-if="showPreview">
-                        <div class="task-info">
-                            <span>采价时间: {{ formatDateRange(formData.pricingTime) }}</span>
-                        </div>
                         <div class="task-preview-content">
                             <t-loading :loading="previewLoading" text="加载预览数据...">
                                 <t-table :data="previewData" :columns="currentColumns" bordered size="small"
@@ -354,7 +351,7 @@ export default Vue.extend({
             console.log('预览参数:', apiParams);
 
             this.$request
-                .post('/web/collectPriceTask/previewCollectPriceTask', apiParams)
+                .post('/web/taskScheduling/previewTheTaskSchedule', apiParams)
                 .then((res) => {
                     if (res.retCode === 200) {
                         const previewData = res.retData;
@@ -362,7 +359,7 @@ export default Vue.extend({
                         if (this.formData.pricingMethod === 'ratio') {
                             this.currentColumns = this.ratioColumns;
 
-                            this.previewData = (previewData || []).map((item, index) => ({
+                            this.previewData = (previewData.previews || []).map((item, index) => ({
                                 id: index + 1,
                                 district: item.areaname || '',
                                 ratio: item.collectRate || 0,
@@ -371,7 +368,7 @@ export default Vue.extend({
                             }));
                         } else {
                             this.currentColumns = this.specificColumns;
-                            this.previewData = (previewData || []).map((item, index) => ({
+                            this.previewData = (previewData.previews || []).map((item, index) => ({
                                 id: index + 1,
                                 district: item.areaname || '',
                                 pointName: item.stallName || ''
@@ -452,6 +449,7 @@ export default Vue.extend({
                     collectEndDate: this.formData.pricingTime[1],
                     isSmsMessages: this.formData.sendSms ? "1" : "0",
                     collectType: this.formData.pricingMethod === 'ratio' ? "1" : "2",
+                    taskSource: "1",
                 }
             };
 
@@ -464,12 +462,11 @@ export default Vue.extend({
             console.log('提交参数:', apiParams);
 
             this.$request
-                .post('/web/collectPriceTask/saveCollectPriceTask', apiParams)
+                .post('/web/taskScheduling/saveTaskScheduling', apiParams)
                 .then((res) => {
                     if (res.retCode === 200) {
-                        this.$message.success('创建任务成功');
                         this.$emit('confirm', this.formData);
-                        this.onClose(); // 关闭对话框
+                        this.onClose();
                     } else {
                         this.$message.error(res.retMsg || '创建任务失败');
                     }

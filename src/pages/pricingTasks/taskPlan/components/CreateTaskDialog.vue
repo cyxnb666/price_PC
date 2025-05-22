@@ -530,6 +530,7 @@ export default Vue.extend({
                     escalationCycle: parseInt(this.formData.reportPeriod, 10),
                     isSmsMessages: this.formData.sendSms ? "1" : "0",
                     collectType: this.formData.pricingMethod === 'ratio' ? "1" : "2",
+                    taskSource: "2",
                 }
             };
 
