@@ -138,27 +138,35 @@
               <span>任务列表</span>
             </div>
 
-            <div class="filter-row">
-              <div class="filter-item">
-                <label>行政区划</label>
-                <t-select v-model="filterParams.areaCode" :options="areaOptions" placeholder="请选择" clearable />
-              </div>
-
-              <div class="filter-item" v-if="pricingMethod === 'specific'">
-                <label>采价点</label>
-                <t-select v-model="filterParams.pointId" :options="pointOptions" placeholder="请选择" clearable />
-              </div>
-
-              <div class="filter-item">
-                <label>任务状态</label>
-                <t-select v-model="filterParams.taskStatus" :options="taskStatusOptions" placeholder="请选择" clearable />
-              </div>
-
-              <div class="filter-actions">
-                <t-button theme="primary" @click="handleSearch">查询</t-button>
-                <t-button theme="default" @click="handleReset" style="margin-left: 8px">重置</t-button>
-              </div>
-            </div>
+            <t-form ref="filterForm" :data="filterParams" :label-width="80" colon @reset="handleReset"
+              @submit="handleSearch">
+              <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
+                <t-col :span="3">
+                  <t-form-item label="行政区划" name="areaCode">
+                    <t-tree-select clearable v-model="filterParams.areaCode" class="form-item-content" :data="areaList"
+                      :treeProps="treeProps" placeholder="请选择行政区划" multiple />
+                  </t-form-item>
+                </t-col>
+                <t-col :span="3" v-if="pricingMethod === 'specific'">
+                  <t-form-item label="采价点" name="pointId">
+                    <t-select clearable v-model="filterParams.pointId" class="form-item-content" :options="pointOptions"
+                      placeholder="请选择采价点" />
+                  </t-form-item>
+                </t-col>
+                <t-col :span="3">
+                  <t-form-item label="任务状态" name="taskStatus">
+                    <t-select clearable v-model="filterParams.taskStatus" class="form-item-content"
+                      :options="taskStatusOptions" placeholder="请选择任务状态" />
+                  </t-form-item>
+                </t-col>
+                <t-col :span="3">
+                  <div class="filter-actions">
+                    <t-button theme="primary" type="submit">查询</t-button>
+                    <t-button type="reset" variant="base" theme="default" :style="{ marginLeft: '8px' }">重置</t-button>
+                  </div>
+                </t-col>
+              </t-row>
+            </t-form>
 
             <div class="table-container">
               <t-table :columns="tableColumns" :data="tableData" :rowKey="rowKey" :verticalAlign="verticalAlign"
@@ -246,7 +254,7 @@ export default Vue.extend({
     return {
       regionDialogVisible: false, // 控制行政区划查看弹窗
       areaList: [], // 行政区划树形数据
-      selectedAreaCodes: [], // 选中的行政区划代码，后续用于回显
+      selectedAreaCodes: [],
       loading: false,
       tableLoading: false,
       isCollapsed: false,
@@ -275,13 +283,18 @@ export default Vue.extend({
         { label: '是', value: true },
         { label: '否', value: false }
       ],
-
       filterParams: {
-        areaCode: '',
+        areaCode: [],
         pointId: '',
         taskStatus: ''
       },
-
+      taskStatusOptions: [
+        { label: '全部', value: '' },
+        { label: '待采价', value: '待采价' },
+        { label: '采价中', value: '采价中' },
+        { label: '已完成', value: '已完成' },
+        { label: '已终止', value: '已终止' }
+      ],
       areaOptions: [
         { label: '四川-成都-xx镇', value: 'SC-CD-XX' },
         { label: '四川-自贡-xx镇', value: 'SC-ZG-XX' }
@@ -325,20 +338,10 @@ export default Vue.extend({
       ],
 
       // 区域占比的表格数据
-      ratioData: [
-        { id: 'JH202501010001-0001', adminRegion: '四川-成都-xx镇', collectTime: '2025/3/12-2025/3/13', collector: '张三', status: '待采价' },
-        { id: 'JH202501010001-0002', adminRegion: '四川-自贡-xx镇', collectTime: '2025/3/14-2025/3/15', collector: '', status: '待认领' },
-        { id: 'JH202501010001-0003', adminRegion: '四川-成都-xx区', collectTime: '2025/3/16-2025/3/17', collector: '张三', status: '已完成' },
-        { id: 'JH202501010001-0004', adminRegion: '四川-绵阳-xx县', collectTime: '2025/3/18-2025/3/19', collector: '张三', status: '采价中' }
-      ],
+      ratioData: [],
 
       // 指定采价点的表格数据
-      specificData: [
-        { id: 'JH202501010001-0001', adminRegion: '四川-成都-xx镇', pointName: '采价点xxx, aaaaa....', collectTime: '2025/3/12-2025/3/13', collector: '张三', status: '待采价' },
-        { id: 'JH202501010001-0002', adminRegion: '四川-自贡-xx镇', pointName: '采价点ccccc, 22222....', collectTime: '2025/3/14-2025/3/15', collector: '', status: '待认领' },
-        { id: 'JH202501010001-0003', adminRegion: '四川-成都-xx区', pointName: '', collectTime: '2025/3/16-2025/3/17', collector: '张三', status: '已完成' },
-        { id: 'JH202501010001-0004', adminRegion: '四川-绵阳-xx县', pointName: '', collectTime: '2025/3/18-2025/3/19', collector: '张三', status: '采价中' }
-      ],
+      specificData: [],
 
       pagination: {
         pageSize: 10,
@@ -379,20 +382,16 @@ export default Vue.extend({
         }
       };
 
-      console.log('调用API参数:', params);
-
       this.$request
         .post('/web/taskScheduling/taskScheduleDetails', params)
         .then((res) => {
-          console.log('API返回数据:', res);
           if (res.retCode === 200) {
-            console.log('获取任务详情成功:', res.retData);
-            // 先打印数据，后续根据数据结构进行页面更新
-
             // 根据获取的数据设置pricingMethod
             this.pricingMethod = this.$route.query.pricingMethod as string || 'ratio';
+
+            // 获取基础信息后，立即获取任务列表
+            this.handleSearch(true);
           } else {
-            console.error('获取任务详情失败:', res.retMsg);
             this.$message.error(res.retMsg || '获取任务详情失败');
           }
         })
@@ -429,23 +428,94 @@ export default Vue.extend({
       this.isCollapsed = !this.isCollapsed;
     },
 
-    handleSearch() {
+    handleSearch(isSearch = false) {
+      if (isSearch) {
+        this.pagination.pageNo = 1;
+      }
+
       this.tableLoading = true;
 
-      // 模拟搜索
-      setTimeout(() => {
-        this.tableLoading = false;
-        // 实际中需要根据筛选条件调用API获取数据
-      }, 300);
+      const params = {
+        condition: {
+          areaCodes: this.filterParams.areaCode || [],
+          taskStatus: this.filterParams.taskStatus,
+        },
+        pageNo: this.pagination.pageNo,
+        pageSize: this.pagination.pageSize,
+      };
+
+      this.$request
+        .post('/web/taskScheduling/taskScheduleDetailsTaskList', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            const records = res.retData.records || [];
+
+            if (this.pricingMethod === 'ratio') {
+              this.ratioData = records.map((item) => {
+                return {
+                  id: item.taskId || '',
+                  adminRegion: item.areaname || '',
+                  collectTime: item.collectTime || '',
+                  collector: item.collectorName || '',
+                  status: item.taskStatus || '',
+                };
+              });
+            } else {
+              this.specificData = records.map((item) => {
+                return {
+                  id: item.taskId || '',
+                  adminRegion: item.areaname || '',
+                  pointName: item.stallName || '',
+                  collectTime: item.collectTime || '',
+                  collector: item.collectorName || '',
+                  status: item.taskStatus || '',
+                };
+              });
+            }
+
+            this.pagination.total = res.retData.total || 0;
+          } else {
+            this.$message.error(res.retMsg || '获取任务列表失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取任务列表失败');
+        })
+        .finally(() => {
+          this.tableLoading = false;
+        });
+    },
+    updateTableData(records) {
+      // 根据实际API返回的数据结构来映射表格数据
+      // 这里先使用示例数据结构，需要根据实际API返回调整
+      if (this.pricingMethod === 'ratio') {
+        this.ratioData = records.map(item => ({
+          id: item.taskId || item.id,
+          adminRegion: item.areaname || item.adminRegion,
+          collectTime: item.collectTime || '',
+          collector: item.collectorName || item.collector,
+          status: item.taskStatus || item.status
+        }));
+      } else {
+        this.specificData = records.map(item => ({
+          id: item.taskId || item.id,
+          adminRegion: item.areaname || item.adminRegion,
+          pointName: item.stallName || item.pointName,
+          collectTime: item.collectTime || '',
+          collector: item.collectorName || item.collector,
+          status: item.taskStatus || item.status
+        }));
+      }
     },
 
     handleReset() {
       this.filterParams = {
-        areaCode: '',
+        areaCode: [],
         pointId: '',
         taskStatus: ''
       };
-      this.handleSearch();
+      this.handleSearch(true);
     },
 
     onCurrentChange(current) {
@@ -491,7 +561,7 @@ export default Vue.extend({
 }
 
 .section {
-  margin-bottom: 32px;
+  // margin-bottom: 32px;
 }
 
 .section-header {
@@ -541,29 +611,11 @@ export default Vue.extend({
   margin-top: 28px; // 对齐输入框
 }
 
-.filter-row {
+.filter-actions {
   display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-  gap: 16px;
-
-  .filter-item {
-    display: flex;
-    flex-direction: column;
-    width: 200px;
-
-    label {
-      font-size: 14px;
-      color: var(--td-text-color-secondary);
-      margin-bottom: 8px;
-    }
-  }
-
-  .filter-actions {
-    display: flex;
-    align-items: flex-end;
-    margin-left: auto;
-  }
+  align-items: flex-end;
+  height: 100%;
+  padding-bottom: 4px;
 }
 
 .table-container {
