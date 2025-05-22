@@ -26,7 +26,10 @@
                 <t-col :span="4">
                   <div class="field-item">
                     <label>行政区划</label>
-                    <t-input v-model="basicInfo.adminRegion" disabled placeholder="" />
+                    <div style="display: flex; gap: 8px;">
+                      <t-input v-model="basicInfo.adminRegion" disabled placeholder="" style="flex: 1;" />
+                      <t-button theme="default" variant="outline" size="medium" @click="handleViewRegion">查看</t-button>
+                    </div>
                   </div>
                 </t-col>
                 <t-col :span="4">
@@ -121,7 +124,8 @@
                 </t-col>
                 <t-col :span="4">
                   <div class="plan-terminate-btn">
-                    <t-button theme="warning" :disabled="!basicInfo.canTerminate" @click="handleTerminate">计划终止</t-button>
+                    <t-button theme="warning" :disabled="!basicInfo.canTerminate"
+                      @click="handleTerminate">计划终止</t-button>
                   </div>
                 </t-col>
               </t-row>
@@ -157,10 +161,10 @@
             </div>
 
             <div class="table-container">
-              <t-table :columns="tableColumns" :data="tableData" :rowKey="rowKey" :verticalAlign="verticalAlign" 
-                :hover="hover" :pagination="pagination" :loading="tableLoading" 
-                :headerAffixedTop="true" height="calc(100vh - 580px)">
-                
+              <t-table :columns="tableColumns" :data="tableData" :rowKey="rowKey" :verticalAlign="verticalAlign"
+                :hover="hover" :pagination="pagination" :loading="tableLoading" :headerAffixedTop="true"
+                height="calc(100vh - 580px)">
+
                 <template #customerIdentifier="{ row }">
                   <span v-if="row.customerIdentifier.includes('客户')" style="color: #e34d59">
                     {{ row.customerIdentifier }}
@@ -207,6 +211,18 @@
         <t-button theme="danger" @click="confirmTerminate">确定终止</t-button>
       </template>
     </t-dialog>
+
+    <!-- 行政区划查看弹窗 -->
+    <t-dialog header="查看行政区划" :visible.sync="regionDialogVisible" :closeOnOverlayClick="false" width="600px">
+      <div class="region-tree-container">
+        <t-tree :data="areaList" :keys="treeProps.keys" :value="selectedAreaCodes" :checkable="true" :activable="false"
+          :expandOnClickNode="true" :hover="true" disabled
+          style="height: 400px; overflow-y: auto; border: 1px solid #dcdcdc; border-radius: 4px; padding: 8px;" />
+      </div>
+      <template #footer>
+        <t-button theme="default" @click="regionDialogVisible = false">关闭</t-button>
+      </template>
+    </t-dialog>
   </div>
 </template>
 
@@ -228,12 +244,15 @@ export default Vue.extend({
   },
   data() {
     return {
+      regionDialogVisible: false, // 控制行政区划查看弹窗
+      areaList: [], // 行政区划树形数据
+      selectedAreaCodes: [], // 选中的行政区划代码，后续用于回显
       loading: false,
       tableLoading: false,
       isCollapsed: false,
       pricingMethod: 'ratio', // 'ratio'表示区域占比, 'specific'表示指定采价点
       terminateDialogVisible: false,
-      
+
       basicInfo: {
         planId: 'JH202501010001',
         adminRegion: '四川-成都-xx镇',
@@ -251,28 +270,28 @@ export default Vue.extend({
         endTime: '',
         canTerminate: true
       },
-      
+
       smsReminderOptions: [
         { label: '是', value: true },
         { label: '否', value: false }
       ],
-      
+
       filterParams: {
         areaCode: '',
         pointId: '',
         taskStatus: ''
       },
-      
+
       areaOptions: [
         { label: '四川-成都-xx镇', value: 'SC-CD-XX' },
         { label: '四川-自贡-xx镇', value: 'SC-ZG-XX' }
       ],
-      
+
       pointOptions: [
         { label: '雨祖果蔬', value: 'P1' },
         { label: '成都果蔬批发', value: 'P2' }
       ],
-      
+
       taskStatusOptions: [
         { label: '全部', value: '' },
         { label: '待采价', value: '待采价' },
@@ -280,12 +299,12 @@ export default Vue.extend({
         { label: '已完成', value: '已完成' },
         { label: '已终止', value: '已终止' }
       ],
-      
+
       // 表格配置
       rowKey: 'id',
       verticalAlign: 'top',
       hover: true,
-      
+
       ratioColumns: [
         { title: '任务编号', align: 'left', width: 150, ellipsis: true, colKey: 'id' },
         { title: '行政区划', align: 'left', width: 150, ellipsis: true, colKey: 'adminRegion' },
@@ -294,7 +313,7 @@ export default Vue.extend({
         { title: '任务状态', width: 100, ellipsis: true, colKey: 'status' },
         { title: '操作', align: 'left', fixed: 'right', width: 100, colKey: 'op' }
       ],
-      
+
       specificColumns: [
         { title: '任务编号', align: 'left', width: 150, ellipsis: true, colKey: 'id' },
         { title: '行政区划', align: 'left', width: 150, ellipsis: true, colKey: 'adminRegion' },
@@ -304,7 +323,7 @@ export default Vue.extend({
         { title: '任务状态', width: 100, ellipsis: true, colKey: 'status' },
         { title: '操作', align: 'left', fixed: 'right', width: 100, colKey: 'op' }
       ],
-      
+
       // 区域占比的表格数据
       ratioData: [
         { id: 'JH202501010001-0001', adminRegion: '四川-成都-xx镇', collectTime: '2025/3/12-2025/3/13', collector: '张三', status: '待采价' },
@@ -312,7 +331,7 @@ export default Vue.extend({
         { id: 'JH202501010001-0003', adminRegion: '四川-成都-xx区', collectTime: '2025/3/16-2025/3/17', collector: '张三', status: '已完成' },
         { id: 'JH202501010001-0004', adminRegion: '四川-绵阳-xx县', collectTime: '2025/3/18-2025/3/19', collector: '张三', status: '采价中' }
       ],
-      
+
       // 指定采价点的表格数据
       specificData: [
         { id: 'JH202501010001-0001', adminRegion: '四川-成都-xx镇', pointName: '采价点xxx, aaaaa....', collectTime: '2025/3/12-2025/3/13', collector: '张三', status: '待采价' },
@@ -320,12 +339,19 @@ export default Vue.extend({
         { id: 'JH202501010001-0003', adminRegion: '四川-成都-xx区', pointName: '', collectTime: '2025/3/16-2025/3/17', collector: '张三', status: '已完成' },
         { id: 'JH202501010001-0004', adminRegion: '四川-绵阳-xx县', pointName: '', collectTime: '2025/3/18-2025/3/19', collector: '张三', status: '采价中' }
       ],
-      
+
       pagination: {
         pageSize: 10,
         total: 4,
         pageNo: 1,
-      }
+      },
+      treeProps: {
+        keys: {
+          label: 'areaname',
+          value: 'areacode',
+          children: 'children',
+        }
+      },
     };
   },
   computed: {
@@ -341,38 +367,78 @@ export default Vue.extend({
   },
   mounted() {
     this.fetchData();
+    this.getAreaList();
   },
   methods: {
     fetchData() {
       this.loading = true;
-      
-      // 模拟获取数据
-      setTimeout(() => {
-        // 这里可以实现真实的API调用
-        // 根据this.id获取计划详情
-        
-        // 模拟设置数据
-        // 根据获取的数据设置pricingMethod
-        this.pricingMethod = this.$route.query.pricingMethod as string || 'ratio';
-        
-        this.loading = false;
-      }, 500);
+
+      const params = {
+        condition: {
+          primaryKey: this.id
+        }
+      };
+
+      console.log('调用API参数:', params);
+
+      this.$request
+        .post('/web/taskScheduling/taskScheduleDetails', params)
+        .then((res) => {
+          console.log('API返回数据:', res);
+          if (res.retCode === 200) {
+            console.log('获取任务详情成功:', res.retData);
+            // 先打印数据，后续根据数据结构进行页面更新
+
+            // 根据获取的数据设置pricingMethod
+            this.pricingMethod = this.$route.query.pricingMethod as string || 'ratio';
+          } else {
+            console.error('获取任务详情失败:', res.retMsg);
+            this.$message.error(res.retMsg || '获取任务详情失败');
+          }
+        })
+        .catch((error) => {
+          console.error('API调用出错:', error);
+          this.$message.error('获取任务详情失败');
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
-    
+
+    handleViewRegion() {
+      this.regionDialogVisible = true;
+    },
+
+    getAreaList() {
+      this.$request
+        .post('/web/area/selectUserDataAreaTree')
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.areaList = res.retData || [];
+          } else {
+            this.$message.error(res.retMsg || '获取行政区划数据失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取行政区划数据失败');
+        });
+    },
+
     toggleCollapse() {
       this.isCollapsed = !this.isCollapsed;
     },
-    
+
     handleSearch() {
       this.tableLoading = true;
-      
+
       // 模拟搜索
       setTimeout(() => {
         this.tableLoading = false;
         // 实际中需要根据筛选条件调用API获取数据
       }, 300);
     },
-    
+
     handleReset() {
       this.filterParams = {
         areaCode: '',
@@ -381,37 +447,37 @@ export default Vue.extend({
       };
       this.handleSearch();
     },
-    
+
     onCurrentChange(current) {
       this.pagination.pageNo = current;
       this.handleSearch();
     },
-    
+
     onPageSizeChange(size) {
       this.pagination.pageSize = size;
       this.handleSearch();
     },
-    
+
     handleViewTaskDetail(row) {
       console.log('查看任务详情', row);
       // 实际中可以跳转到任务详情页面
     },
-    
+
     handleTerminate() {
       this.terminateDialogVisible = true;
     },
-    
+
     confirmTerminate() {
       // 实际中调用API终止计划
       console.log('确认终止计划', this.id);
       this.terminateDialogVisible = false;
       this.$message.success('计划已成功终止');
-      
+
       // 更新基础信息
       this.basicInfo.canTerminate = false;
       this.basicInfo.endTime = '2025-03-17 15:30:22';
     },
-    
+
     goBack() {
       this.$router.back();
     }
@@ -453,7 +519,7 @@ export default Vue.extend({
   transition: max-height 0.3s ease;
   overflow: hidden;
   max-height: 1000px;
-  
+
   &.collapsed {
     max-height: 160px; // 约两行的高度
   }
@@ -480,19 +546,19 @@ export default Vue.extend({
   flex-wrap: wrap;
   margin-bottom: 16px;
   gap: 16px;
-  
+
   .filter-item {
     display: flex;
     flex-direction: column;
     width: 200px;
-    
+
     label {
       font-size: 14px;
       color: var(--td-text-color-secondary);
       margin-bottom: 8px;
     }
   }
-  
+
   .filter-actions {
     display: flex;
     align-items: flex-end;
@@ -518,5 +584,33 @@ export default Vue.extend({
 
 .t-button-link {
   margin-right: 8px;
+}
+
+.region-tree-container {
+  padding: 10px 0;
+
+  :deep(.t-tree) {
+    max-height: 400px;
+    overflow-y: auto;
+
+    // 美化滚动条
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #c0c0c0;
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: #a0a0a0;
+    }
+  }
 }
 </style>
