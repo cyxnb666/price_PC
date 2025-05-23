@@ -77,6 +77,21 @@
                   />
                 </t-form-item>
               </t-col>
+              <t-col>
+                <t-form-item label="客户标识">
+                  <t-select
+                    clearable
+                    v-model="formData.customerIdentification"
+                    style="width: 160px"
+                    class="form-item-content"
+                    :options="[
+                      { value: '1', label: '是' },
+                        { value: '0', label: '否' }
+                    ]"
+                    placeholder="请选择客户标识"
+                  />
+                </t-form-item>
+              </t-col>
             </t-row>
           </t-col>
           <t-col :xxl="2" :xl="3" class="operation-container">
@@ -98,6 +113,9 @@
           :headerAffixedTop="true"
           :headerAffixProps="{ offsetTop: offsetTop }"
         >
+          <template #customerIdentification="{ row }">
+            {{ row.customerIdentification === '1' ? '是' : '否' }}
+          </template>
           <template #enabled="{ row }">
             <t-switch
               size="large"
@@ -174,6 +192,19 @@
             class="form-item-content`"
             :options="stallTypeList"
             placeholder="请选择采价点类型"
+          />
+        </t-form-item>
+        <t-form-item label="客户标识" name="customerIdentification">
+          <t-select
+            clearable
+            v-model="form.customerIdentification"
+            style="width: 100%"
+            class="form-item-content"
+            :options="[
+              { value: '1', label: '是' },
+              { value: '0', label: '否' }
+            ]"
+            placeholder="请选择客户标识"
           />
         </t-form-item>
         <t-form-item label="采价点归属" name="stallVests">
@@ -344,6 +375,12 @@ export default Vue.extend({
           colKey: 'stallTypeCnm',
         },
         {
+          title: '客户标识',
+          width: 100,
+          ellipsis: true,
+          colKey: 'customerIdentification',
+        },
+        {
           title: '采价点归属',
           width: 150,
           ellipsis: true,
@@ -391,6 +428,7 @@ export default Vue.extend({
       FORM_RULES: {
         stallName: [{ required: true, message: '请输入采价点名称', type: 'error' }],
         stallType: [{ required: true, message: '请选择采价点类型', type: 'error' }],
+        customerIdentification: [{ required: true, message: '请选择客户标识', type: 'error' }],
         provinceCode: [{ required: true, message: '请选择采价点类型', type: 'error' }],
         varietyIds: [
           { required: true, message: '请选择采价品种', type: 'error' },
@@ -420,6 +458,7 @@ export default Vue.extend({
         areacodes: [],
         stallName: '',
         stallState: '1',
+        customerIdentification: '',
         stallType: '',
         stallVests: [],
         varietyIds: [],
@@ -429,6 +468,7 @@ export default Vue.extend({
         stallName: '',
         stallState: '1',
         stallType: '',
+        customerIdentification: '0',
         cityCode: '',
         townCode: '',
         stallAddress: '',
@@ -770,4 +810,3 @@ export default Vue.extend({
   margin-left: var(--td-comp-margin-s);
 }
 </style>
-    
