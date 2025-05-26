@@ -1,4 +1,4 @@
-import { DashboardIcon } from 'tdesign-icons-vue';
+import { ChartAnalyticsIcon } from 'tdesign-icons-vue';
 import Layout from '@/layouts/index.vue';
 
 export default [
@@ -9,7 +9,7 @@ export default [
     name: 'marketPrice',
     meta: {
       title: '行情价',
-      icon: DashboardIcon,
+      icon: ChartAnalyticsIcon,
       menuId: 15
     },
     children: [
