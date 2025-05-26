@@ -68,7 +68,7 @@
                     :pagination="pagination" :loading="loading" :headerAffixedTop="true" height="calc(100vh - 420px)">
                     <template #customerIdentifier="{ row }">
                         <span v-if="row.customerIdentifier.includes('客户')">
-                            <span style="color: #e34d59">{{ row.customerIdentifier }}</span>
+                            <span>{{ row.customerIdentifier }}</span>
                         </span>
                         <span v-else>{{ row.customerIdentifier }}</span>
                     </template>

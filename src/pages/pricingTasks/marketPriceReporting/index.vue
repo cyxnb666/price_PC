@@ -5,46 +5,26 @@
         <t-row :gutter="[16, 24]" :style="{ marginBottom: '10px' }">
           <t-col :span="3">
             <t-form-item label="行政区划" name="areaCode">
-              <t-tree-select
-                clearable
-                v-model="formData.areaCode"
-                :treeProps="treeProps"
-                :data="areaList"
-                placeholder="请选择行政区划"
-              />
+              <t-tree-select clearable v-model="formData.areaCode" :treeProps="treeProps" :data="areaList"
+                placeholder="请选择行政区划" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="采价点类型" name="stallType">
-              <t-select
-                clearable
-                v-model="formData.stallType"
-                class="form-item-content"
-                :options="pointTypeOptions"
-                placeholder="请选择采价点类型"
-              />
+              <t-select clearable v-model="formData.stallType" class="form-item-content" :options="pointTypeOptions"
+                placeholder="请选择采价点类型" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="采价点归属" name="stallVest">
-              <t-select
-                clearable
-                v-model="formData.stallVest"
-                class="form-item-content"
-                :options="pointAffiliationOptions"
-                placeholder="请选择采价点归属"
-              />
+              <t-select clearable v-model="formData.stallVest" class="form-item-content"
+                :options="pointAffiliationOptions" placeholder="请选择采价点归属" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="采价点" name="stallId">
-              <t-select
-                clearable
-                v-model="formData.stallId"
-                class="form-item-content"
-                :options="pointOptions"
-                placeholder="请选择采价点"
-              />
+              <t-select clearable v-model="formData.stallId" class="form-item-content" :options="pointOptions"
+                placeholder="请选择采价点" />
             </t-form-item>
           </t-col>
         </t-row>
@@ -52,35 +32,26 @@
         <t-row :gutter="[16, 24]">
           <t-col :span="3">
             <t-form-item label="品种" name="varietyId">
-              <t-select
-                clearable
-                v-model="formData.varietyId"
-                class="form-item-content"
-                :options="categoryOptions"
-                placeholder="请选择品种"
-              />
+              <t-select clearable v-model="formData.varietyId" class="form-item-content" :options="categoryOptions"
+                placeholder="请选择品种" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="采价员" name="collectorId">
-              <t-select
-                clearable
-                v-model="formData.collectorId"
-                class="form-item-content"
-                :options="personnelOptions"
-                placeholder="请选择采价员"
-              />
+              <t-select clearable v-model="formData.collectorId" class="form-item-content" :options="personnelOptions"
+                placeholder="请选择采价员" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
             <t-form-item label="审核状态" name="auditStatus">
-              <t-select
-                clearable
-                v-model="formData.auditStatus"
-                class="form-item-content"
-                :options="auditStatusOptions"
-                placeholder="请选择审核状态"
-              />
+              <t-select clearable v-model="formData.auditStatus" class="form-item-content" :options="auditStatusOptions"
+                placeholder="请选择审核状态" />
+            </t-form-item>
+          </t-col>
+          <t-col :span="3">
+            <t-form-item label="客户标识" name="customerIdentification">
+              <t-select clearable v-model="formData.customerIdentification" class="form-item-content"
+                :options="customerIdentifierOptions" placeholder="请选择客户标识" />
             </t-form-item>
           </t-col>
         </t-row>
@@ -91,26 +62,22 @@
             <div class="operation-container" style="display: flex; justify-content: flex-end">
               <t-button theme="primary" type="submit">查询</t-button>
               <t-button type="reset" variant="base" theme="default" :style="{ marginLeft: '8px' }">重置</t-button>
-              <t-button theme="default" @click="handleExport" :style="{ marginLeft: '8px' }" :loading="exportLoading"
-                >导出</t-button
-              >
+              <t-button theme="default" @click="handleExport" :style="{ marginLeft: '8px' }"
+                :loading="exportLoading">导出</t-button>
             </div>
           </t-col>
         </t-row>
       </t-form>
 
       <div class="table-container">
-        <t-table
-          :columns="columns"
-          :data="data"
-          :rowKey="rowKey"
-          :verticalAlign="verticalAlign"
-          :hover="hover"
-          :pagination="pagination"
-          :loading="dataLoading"
-          :headerAffixedTop="true"
-          height="calc(100vh - 420px)"
-        >
+        <t-table :columns="columns" :data="data" :rowKey="rowKey" :verticalAlign="verticalAlign" :hover="hover"
+          :pagination="pagination" :loading="dataLoading" :headerAffixedTop="true" height="calc(100vh - 420px)">
+          <template #customerIdentifier="{ row }">
+            <span v-if="row.customerIdentifier.includes('客户')">
+              <span>{{ row.customerIdentifier }}</span>
+            </span>
+            <span v-else>{{ row.customerIdentifier }}</span>
+          </template>
           <template #auditResult="{ row }">
             <t-tag v-if="row.auditResult === '0'" theme="warning" variant="light">待审核</t-tag>
             <t-tag v-if="row.auditResult === '1'" theme="success" variant="light">审核通过</t-tag>
@@ -129,14 +96,9 @@
       </div>
 
       <div class="pagination">
-        <t-pagination
-          showFirstAndLastPageBtn
-          :total="pagination.total"
-          :default-current="pagination.pageNo"
-          :default-page-size="pagination.pageSize"
-          @current-change="onCurrentChange"
-          @page-size-change="onPageSizeChange"
-        />
+        <t-pagination showFirstAndLastPageBtn :total="pagination.total" :default-current="pagination.pageNo"
+          :default-page-size="pagination.pageSize" @current-change="onCurrentChange"
+          @page-size-change="onPageSizeChange" />
       </div>
     </t-card>
   </div>
@@ -202,6 +164,12 @@ export default Vue.extend({
           colKey: 'stallVestName',
         },
         {
+          title: '采价点客户标识',
+          width: 150,
+          ellipsis: true,
+          colKey: 'customerIdentifier',
+        },
+        {
           title: '采价点',
           width: 120,
           ellipsis: true,
@@ -241,6 +209,7 @@ export default Vue.extend({
         varietyId: '',
         collectorId: '',
         auditStatus: '',
+        customerIdentification: '',
       },
       rowKey: 'id',
       verticalAlign: 'top',
@@ -256,6 +225,11 @@ export default Vue.extend({
         { label: '待审核', value: '0' },
         { label: '审核通过', value: '1' },
         { label: '审核不通过', value: '2' },
+      ],
+      customerIdentifierOptions: [
+        { label: '全部', value: '' },
+        { label: '客户', value: '1' },
+        { label: '非客户', value: '0' },
       ],
       pagination: {
         pageSize: 10,
@@ -301,20 +275,20 @@ export default Vue.extend({
     },
   },
   mounted() {
-  const hasState = this.loadStateFromStorage();
-  if (hasState) {
-    this.getList();
-  } else {
-    this.getList();
-    this.saveStateToStorage();
-  }
-  this.getAreaList();
-  this.getPointTypeOptions();
-  this.getPointAffiliationOptions();
-  this.getPersonnelOptions();
-  this.getPointOptions();
-  this.getCategoryOptions();
-},
+    const hasState = this.loadStateFromStorage();
+    if (hasState) {
+      this.getList();
+    } else {
+      this.getList();
+      this.saveStateToStorage();
+    }
+    this.getAreaList();
+    this.getPointTypeOptions();
+    this.getPointAffiliationOptions();
+    this.getPersonnelOptions();
+    this.getPointOptions();
+    this.getCategoryOptions();
+  },
   methods: {
     // 获取品种数据
     getCategoryOptions() {
@@ -498,107 +472,110 @@ export default Vue.extend({
         });
     },
     saveStateToStorage() {
-    const stateToSave = {
-      formData: this.formData,
-      pagination: {
-        pageSize: this.pagination.pageSize,
-        pageNo: this.pagination.pageNo
+      const stateToSave = {
+        formData: this.formData,
+        pagination: {
+          pageSize: this.pagination.pageSize,
+          pageNo: this.pagination.pageNo
+        }
+      };
+      sessionStorage.setItem('marketPriceReportingState', JSON.stringify(stateToSave));
+    },
+
+
+    loadStateFromStorage() {
+      const savedState = sessionStorage.getItem('marketPriceReportingState');
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        this.formData = { ...parsedState.formData };
+        this.pagination.pageNo = parsedState.pagination.pageNo;
+        this.pagination.pageSize = parsedState.pagination.pageSize;
+        return true;
       }
-    };
-    sessionStorage.setItem('marketPriceReportingState', JSON.stringify(stateToSave));
-  },
-
-
-  loadStateFromStorage() {
-    const savedState = sessionStorage.getItem('marketPriceReportingState');
-    if (savedState) {
-      const parsedState = JSON.parse(savedState);
-      this.formData = { ...parsedState.formData };
-      this.pagination.pageNo = parsedState.pagination.pageNo;
-      this.pagination.pageSize = parsedState.pagination.pageSize;
-      return true;
-    }
-    return false;
-  },
+      return false;
+    },
     onSearch() {
       this.getList(true);
       this.saveStateToStorage();
     },
     onReset() {
-    this.$set(this.$data, 'formData', this.$options.data().formData);
-    this.getList(true);
-    this.getPersonnelOptions();
-    this.getPointOptions();
-    this.saveStateToStorage();
-  },
-  getList(isSearch = false) {
-    if (isSearch) {
-      this.pagination.pageNo = 1;
-    }
+      this.$set(this.$data, 'formData', this.$options.data().formData);
+      this.getList(true);
+      this.getPersonnelOptions();
+      this.getPointOptions();
+      this.saveStateToStorage();
+    },
+    getList(isSearch = false) {
+      if (isSearch) {
+        this.pagination.pageNo = 1;
+      }
 
-    this.dataLoading = true;
+      this.dataLoading = true;
 
-    const params = {
-      condition: {
-        areaCode: this.formData.areaCode,
-        stallType: this.formData.stallType,
-        stallVest: this.formData.stallVest,
-        stallId: this.formData.stallId ? [this.formData.stallId] : [],
-        varietyId: this.formData.varietyId,
-        collectorId: this.formData.collectorId,
-        auditResult: this.formData.auditStatus,
-      },
-      pageNo: this.pagination.pageNo,
-      pageSize: this.pagination.pageSize,
-    };
+      const params = {
+        condition: {
+          areaCode: this.formData.areaCode,
+          stallType: this.formData.stallType,
+          stallVest: this.formData.stallVest,
+          stallId: this.formData.stallId ? [this.formData.stallId] : [],
+          varietyId: this.formData.varietyId,
+          collectorId: this.formData.collectorId,
+          auditResult: this.formData.auditStatus,
+          // customerIdentification: this.formData.customerIdentification ? [this.formData.customerIdentification] : [],
+          customerIdentification: this.formData.customerIdentification,
+        },
+        pageNo: this.pagination.pageNo,
+        pageSize: this.pagination.pageSize,
+      };
 
-    this.$request
-      .post('/web/collectAudit/pageQueryCollectAudits', params)
-      .then((res) => {
-        if (res.retCode === 200) {
-          this.data = (res.retData.records || []).map((item) => {
-            return {
-              id: item.auditId,
-              auditTaskId:item.auditTaskId,
-              divisionName: item.divisionName || '',
-              varietyName: item.varietyName || '',
-              categoryName: item.categoryName || '',
-              collectResource: item.collectResource || '',
-              stallType: item.stallType,
-              stallTypeName: item.stallTypeName || '',
-              stallVest: item.stallVest,
-              stallVestName: item.stallVestName || '',
-              stallName: item.stallName || '',
-              reportDate: item.reportDate || '',
-              collectorName: item.collectorName || '',
-              auditResult: item.auditResult || '',
-              collectorId: item.collectorId,
-            };
-          });
-          this.pagination.total = res.retData.total || 0;
-          this.saveStateToStorage();
-        } else {
-          this.$message.error(res.retMsg || '获取数据失败');
-        }
-      })
-      .catch((e) => {
-        console.error(e);
-        this.$message.error('获取数据失败');
-      })
-      .finally(() => {
-        this.dataLoading = false;
-      });
-},
+      this.$request
+        .post('/web/collectAudit/pageQueryCollectAudits', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.data = (res.retData.records || []).map((item) => {
+              return {
+                id: item.auditId,
+                auditTaskId: item.auditTaskId,
+                divisionName: item.divisionName || '',
+                varietyName: item.varietyName || '',
+                categoryName: item.categoryName || '',
+                collectResource: item.collectResource || '',
+                stallType: item.stallType,
+                stallTypeName: item.stallTypeName || '',
+                stallVest: item.stallVest,
+                stallVestName: item.stallVestName || '',
+                customerIdentifier: this.formatCustomerIdentifier(item.customerIdentification),
+                stallName: item.stallName || '',
+                reportDate: item.reportDate || '',
+                collectorName: item.collectorName || '',
+                auditResult: item.auditResult || '',
+                collectorId: item.collectorId,
+              };
+            });
+            this.pagination.total = res.retData.total || 0;
+            this.saveStateToStorage();
+          } else {
+            this.$message.error(res.retMsg || '获取数据失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取数据失败');
+        })
+        .finally(() => {
+          this.dataLoading = false;
+        });
+    },
     onPageSizeChange(size) {
-    this.pagination.pageSize = size;
-    this.getList();
-    this.saveStateToStorage();
-  },
+      this.pagination.pageSize = size;
+      this.getList();
+      this.saveStateToStorage();
+    },
     onCurrentChange(current) {
-    this.pagination.pageNo = current;
-    this.getList();
-    this.saveStateToStorage();
-  },
+      this.pagination.pageNo = current;
+      this.getList();
+      this.saveStateToStorage();
+    },
     handleViewDetails({ row }) {
       this.$router.push({
         name: 'marketPriceReportingDetail',
@@ -606,6 +583,12 @@ export default Vue.extend({
           id: String(row.id),
         },
       });
+    },
+    formatCustomerIdentifier(value) {
+      if (value === '1') return '客户';
+      if (value === '0') return '非客户';
+      if (value === '') return '客户、非客户';
+      return '';
     },
     handleExport() {
       this.exportLoading = true;
@@ -619,6 +602,7 @@ export default Vue.extend({
           varietyId: this.formData.varietyId,
           collectorId: this.formData.collectorId,
           auditResult: this.formData.auditStatus,
+          customerIdentification: this.formData.customerIdentification ? [this.formData.customerIdentification] : [],
         },
       };
 
