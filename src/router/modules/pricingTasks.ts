@@ -53,7 +53,7 @@ export default [
         path: 'taskAssignment',
         name: 'taskAssignment',
         component: () => import('@/pages/pricingTasks/taskAssignment/index.vue'),
-        meta: { title: '采价任务下派', menuId: 11 },
+        meta: { title: '任务下派', menuId: 11 },
       },
       {
         path: 'dashboard',
