@@ -12,7 +12,13 @@
       >
         <t-row :gutter="20">
           <t-col :span="2" class="operation-container">
-            <t-button @click="handleSetupContract" :style="{ marginLeft: '8px' }"> 新增规格 </t-button>
+            <t-button 
+              @click="handleSetupContract" 
+              :style="{ marginLeft: '8px' }"
+              :disabled="isAddButtonDisabled"
+            > 
+              新增规格 
+            </t-button>
           </t-col>
         </t-row>
       </t-form>
@@ -38,7 +44,14 @@
           </template>
           <template #op="slotProps">
             <a class="t-button-link" @click="handleClickDetail(slotProps)">编辑</a>
-            <a class="t-button-link" @click="handleClickDelete(slotProps)">删除</a>
+            <!-- 只有非统果类型才显示删除按钮 -->
+            <a 
+              v-if="tab.value !== 'TONGGUO'" 
+              class="t-button-link" 
+              @click="handleClickDelete(slotProps)"
+            >
+              删除
+            </a>
           </template>
         </t-table>
       </div>
@@ -226,6 +239,10 @@ export default Vue.extend({
       }
       
       return baseRules;
+    },
+    isAddButtonDisabled() {
+      // 如果是统果类型且total大于0，则禁用按钮
+      return this.tab.value === 'TONGGUO' && this.pagination.total > 0;
     },
   },
   mounted() {
