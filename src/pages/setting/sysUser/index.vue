@@ -224,7 +224,7 @@ export default Vue.extend({
           value: 'areacode',
           children: 'children',
         },
-        valueMode: 'onlyLeaf',
+        valueMode: 'all',
       },
       searchValue: '',
       confirmVisible: false,
