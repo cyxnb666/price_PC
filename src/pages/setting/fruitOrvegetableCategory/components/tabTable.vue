@@ -63,7 +63,7 @@
       v-loading="loading"
     >
       <t-form ref="form" @submit="onSubmit" :data="form" :rules="FORM_RULES" label-align="left" :label-width="90">
-        <t-form-item label="规格" name="fvSpecsMax">
+        <t-form-item v-if="tab.value !== 'TONGGUO'" label="规格" name="fvSpecsMax">
           <t-row :gutter="1">
             <t-space :size="14">
               <t-col :span="5.5">
@@ -164,17 +164,9 @@ export default Vue.extend({
       specsType: {
         DIAMETER: 'mm',
         WEIGHT: 'g',
+        TONGGUO: '',
       },
       title: '新增规格',
-      FORM_RULES: {
-        fvSpecsMax: [
-          {
-            validator: this.validateSpecs,
-          },
-        ],
-        fvSpecsMin: [{ required: true, message: '请输入规格', type: 'error' }],
-        varietyUnit: [{ required: true, message: '请选择单位', type: 'error' }],
-      },
       formData: {
         categoryId: '',
         categoryName: '',
@@ -217,6 +209,24 @@ export default Vue.extend({
     offsetTop() {
       return this.$store.state.setting.isUseTabsRouter ? 48 : 0;
     },
+    // 动态计算验证规则
+    FORM_RULES() {
+      const baseRules = {
+        varietyUnit: [{ required: true, message: '请选择单位', type: 'error' }],
+      };
+      
+      // 只有非按统果时才需要规格验证
+      if (this.tab.value !== 'TONGGUO') {
+        baseRules.fvSpecsMax = [
+          {
+            validator: this.validateSpecs,
+          },
+        ];
+        baseRules.fvSpecsMin = [{ required: true, message: '请输入规格', type: 'error' }];
+      }
+      
+      return baseRules;
+    },
   },
   mounted() {
     this.getUnitList();
@@ -231,6 +241,10 @@ export default Vue.extend({
       }
     },
     formater(row) {
+      if (this.tab.value === 'TONGGUO') {
+        return '统果';
+      }
+      
       let unit = this.tab.value == 'DIAMETER' ? 'mm' : 'g';
       if (row.fvSpecsMin && row.fvSpecsMax) {
         return `${row.fvSpecsMin}${unit}-${row.fvSpecsMax}${unit}`;
@@ -369,6 +383,8 @@ export default Vue.extend({
         let params = {
           condition: {
             ...this.form,
+            fvSpecsMax: this.tab.value === 'TONGGUO' ? '' : this.form.fvSpecsMax,
+            fvSpecsMin: this.tab.value === 'TONGGUO' ? '' : this.form.fvSpecsMin,
           },
         };
         console.log(params);
@@ -434,4 +450,3 @@ export default Vue.extend({
   margin-left: var(--td-comp-margin-s);
 }
 </style>
-      
