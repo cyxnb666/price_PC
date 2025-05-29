@@ -13,19 +13,19 @@
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>上报价格归属</label>
-                                    <t-input v-model="basicInfo.priceAffiliation" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.areaname" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>订购来源</label>
-                                    <t-input v-model="basicInfo.subscriptionSource" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.orderSourceName" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
                                 <div class="field-item">
-                                    <label>品种大类</label>
-                                    <t-input v-model="basicInfo.categoryType" disabled placeholder="" />
+                                    <label>品类</label>
+                                    <t-input v-model="basicInfo.categoryName" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
@@ -40,26 +40,26 @@
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>预采购时间</label>
-                                    <t-input v-model="basicInfo.plannedPurchaseTime" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.collectMonth" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>上报时间</label>
-                                    <t-input v-model="basicInfo.reportTime" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.collectTime" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>上报人</label>
-                                    <t-input v-model="basicInfo.reporter" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.registUserName" disabled placeholder="" />
                                 </div>
                             </t-col>
                         </t-row>
                     </div>
                 </div>
 
-                <div class="section">
+                <div class="section" v-if="showPlanterInfo">
                     <div class="section-title">
                         <span class="section-title-marker"></span>
                         <span>订购信息</span>
@@ -70,39 +70,52 @@
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>种植户姓名</label>
-                                    <t-input v-model="subscriptionInfo.planterName" disabled placeholder="" />
+                                    <t-input v-model="subscriptionInfo.farmerName" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>身份证号码</label>
-                                    <t-input v-model="subscriptionInfo.idCardNumber" disabled placeholder="" />
+                                    <t-input v-model="subscriptionInfo.farmerCardNo" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>果园定位</label>
-                                    <t-input v-model="subscriptionInfo.orchardLocation" disabled placeholder="" />
+                                    <t-input v-model="subscriptionInfo.collectAddress" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>种植户电话</label>
-                                    <t-input v-model="subscriptionInfo.planterPhone" disabled placeholder="" />
+                                    <t-input v-model="subscriptionInfo.farmerMobile" disabled placeholder="" />
                                 </div>
                             </t-col>
                         </t-row>
+                    </div>
+                </div>
 
-                        <div class="price-info">
-                            <t-table :data="priceData" :columns="priceColumns" rowKey="id" bordered>
-                                <template #unitPrice="{ row }">
-                                    <span>{{ row.unitPrice }}</span>
-                                </template>
-                                <template #quantity="{ row }">
-                                    <span>{{ row.quantity }}</span>
-                                </template>
-                            </t-table>
-                        </div>
+                <div class="section">
+                    <div class="section-title">
+                        <span class="section-title-marker"></span>
+                        <span>价格信息</span>
+                    </div>
+
+                    <div class="price-info">
+                        <t-table :data="priceData" :columns="priceColumns" rowKey="collectSpecsId" bordered>
+                            <template #specsTypeName="{ row }">
+                                <span>{{ row.specsTypeName }}</span>
+                            </template>
+                            <template #fvSpecs="{ row }">
+                                <span>{{ row.fvSpecs }}</span>
+                            </template>
+                            <template #unitPriceStr="{ row }">
+                                <span>{{ row.unitPriceStr }}</span>
+                            </template>
+                            <template #weight="{ row }">
+                                <span>{{ row.weight }}</span>
+                            </template>
+                        </t-table>
                     </div>
                 </div>
 
@@ -186,31 +199,37 @@ export default Vue.extend({
         return {
             loading: false,
             basicInfo: {
-                priceAffiliation: '',
-                subscriptionSource: '',
-                categoryType: '',
+                recordId: '',
+                areaname: '',
+                orderSourceName: '',
+                categoryName: '',
                 varietyName: '',
-                plannedPurchaseTime: '',
-                reportTime: '',
-                reporter: '',
+                collectMonth: '',
+                collectTime: '',
+                registUserName: '',
             },
             subscriptionInfo: {
-                planterName: '',
-                idCardNumber: '',
-                orchardLocation: '',
-                planterPhone: '',
+                farmerName: '',
+                farmerCardNo: '',
+                collectAddress: '',
+                farmerMobile: '',
             },
             priceData: [],
             priceColumns: [
-                { title: '计价方式', colKey: 'pricingMethod', width: 150 },
-                { title: '规格', colKey: 'specification', width: 200 },
-                { title: '订购价', colKey: 'unitPrice', width: 150 },
-                { title: '订购数量(kg)', colKey: 'quantity', width: 150 },
+                { title: '计价方式', colKey: 'specsTypeName', width: 150 },
+                { title: '规格', colKey: 'fvSpecs', width: 200 },
+                { title: '订购价', colKey: 'unitPriceStr', width: 150 },
+                { title: '订购数量(KG)', colKey: 'weight', width: 150 },
             ],
             subscriptionFiles: [], // 订购凭据文件列表
+            orderSource: '', // 用于判断是否显示种植户信息
         };
     },
     computed: {
+        // 判断是否显示种植户信息
+        showPlanterInfo() {
+            return this.orderSource !== 'SFRM';
+        },
         // 订购凭据中的图片文件
         subscriptionImageFiles() {
             if (!this.subscriptionFiles) return [];
@@ -237,118 +256,98 @@ export default Vue.extend({
         this.fetchData();
     },
     methods: {
-        fetchData() {
+        async fetchData() {
             this.loading = true;
 
-            // 模拟API请求
-            setTimeout(() => {
-                // 模拟数据
-                this.basicInfo = {
-                    priceAffiliation: '华南区域',
-                    subscriptionSource: '线上订购/京东商城',
-                    categoryType: '水果',
-                    varietyName: '苹果',
-                    plannedPurchaseTime: '2024-02-15',
-                    reportTime: '2024-01-15 09:30:00',
-                    reporter: '张三',
-                };
+            const params = {
+                condition: {
+                    primaryKey: this.id,
+                },
+            };
 
-                this.subscriptionInfo = {
-                    planterName: '李种植',
-                    idCardNumber: '440123199001011234',
-                    orchardLocation: '广东省广州市白云区果园路123号',
-                    planterPhone: '13800138001',
-                };
+            try {
+                const res = await this.$request.post('/web/orecord/getOrderRecord', params);
+                if (res.retCode === 200) {
+                    const data = res.retData;
+                    console.log('订购记录详情数据:', data);
 
-                this.priceData = [
-                    {
-                        id: '1',
-                        pricingMethod: '按果径',
-                        specification: '90-100mm',
-                        unitPrice: '2.2元/公斤',
-                        quantity: '500',
-                    },
-                    {
-                        id: '2',
-                        pricingMethod: '按果径',
-                        specification: '101-200mm',
-                        unitPrice: '2.5元/公斤',
-                        quantity: '800',
-                    },
-                    {
-                        id: '3',
-                        pricingMethod: '按重量',
-                        specification: '100-200g',
-                        unitPrice: '3元/斤',
-                        quantity: '1000',
-                    },
-                    {
-                        id: '4',
-                        pricingMethod: '统果',
-                        specification: '-',
-                        unitPrice: '2.8元/公斤',
-                        quantity: '300',
-                    },
-                ];
+                    // 设置基础信息
+                    this.basicInfo = {
+                        recordId: data.recordId || '',
+                        areaname: data.areaname || '',
+                        orderSourceName: data.orderSourceName || '',
+                        categoryName: data.categoryName || '',
+                        varietyName: data.varietyName || '',
+                        collectMonth: data.collectMonth || '',
+                        collectTime: data.collectTime || '',
+                        registUserName: data.registUserName || '',
+                    };
 
-                // 模拟订购凭据文件
-                this.subscriptionFiles = [
-                    {
-                        fileId: '1',
-                        fileName: '订购合同.jpg',
-                        fileSuffix: 'jpg',
-                        fileUrl: 'https://tdesign.gtimg.com/demo/demo-image-1.png',
-                    },
-                    {
-                        fileId: '2',
-                        fileName: '果园照片.jpg',
-                        fileSuffix: 'jpg',
-                        fileUrl: 'https://tdesign.gtimg.com/demo/demo-image-2.png',
-                    },
-                    {
-                        fileId: '3',
-                        fileName: '身份证复印件.jpg',
-                        fileSuffix: 'jpg',
-                        fileUrl: 'https://tdesign.gtimg.com/demo/demo-image-3.png',
-                    },
-                    {
-                        fileId: '4',
-                        fileName: '订购视频.mp4',
-                        fileSuffix: 'mp4',
-                        fileUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-                    },
-                ];
+                    // 设置订购信息
+                    this.subscriptionInfo = {
+                        farmerName: data.farmerName || '',
+                        farmerCardNo: data.farmerCardNo || '',
+                        collectAddress: data.collectAddress || '',
+                        farmerMobile: data.farmerMobile || '',
+                    };
 
+                    // 设置价格数据
+                    this.priceData = data.specss || [];
+
+                    // 设置订购来源，用于判断是否显示种植户信息
+                    this.orderSource = data.orderSource || '';
+
+                    // 处理订购凭据文件
+                    this.subscriptionFiles = data.agreementFiles || [];
+
+                    // 为每个文件获取预览URL
+                    await this.processAllFiles();
+                } else {
+                    this.$message.error(res.retMsg || '获取详情数据失败');
+                }
+            } catch (e) {
+                console.error('API error:', e);
+                this.$message.error('获取详情数据失败');
+            } finally {
                 this.loading = false;
-            }, 1000);
+            }
+        },
 
-            // 实际项目中的API调用：
-            // const params = {
-            //   condition: {
-            //     primaryKey: this.id,
-            //   },
-            // };
-            // 
-            // this.$request
-            //   .post('/web/subscriptionRecord/getDetail', params)
-            //   .then(async (res) => {
-            //     if (res.retCode === 200) {
-            //       const data = res.retData;
-            //       this.basicInfo = { ...data.basicInfo };
-            //       this.subscriptionInfo = { ...data.subscriptionInfo };
-            //       this.priceData = data.priceData || [];
-            //       this.subscriptionFiles = data.subscriptionFiles || [];
-            //     } else {
-            //       this.$message.error(res.retMsg || '获取详情数据失败');
-            //     }
-            //   })
-            //   .catch((e) => {
-            //     console.error('API error:', e);
-            //     this.$message.error('获取详情数据失败');
-            //   })
-            //   .finally(() => {
-            //     this.loading = false;
-            //   });
+        // 处理所有文件，获取预览URL
+        async processAllFiles() {
+            if (this.subscriptionFiles && this.subscriptionFiles.length) {
+                for (const file of this.subscriptionFiles) {
+                    if (!this.isImageFile(file.fileSuffix) && !this.isVideoFile(file.fileSuffix)) {
+                        file.fileUrl = file.fileId;
+                    } else {
+                        file.fileUrl = await this.fetchFileUrl(file.fileId);
+                    }
+                }
+            }
+        },
+
+        // 获取文件预览URL
+        async fetchFileUrl(fileId) {
+            if (!fileId) return null;
+
+            try {
+                const params = {
+                    condition: {
+                        primaryKey: fileId,
+                    },
+                };
+
+                const response = await this.$request.post('/file/preview', params, {
+                    responseType: 'arraybuffer',
+                });
+
+                const blob = new Blob([response.data]);
+                const objectUrl = URL.createObjectURL(blob);
+                return objectUrl;
+            } catch (error) {
+                console.error('Error fetching file URL:', error);
+                return null;
+            }
         },
 
         // 判断文件是否为图片
@@ -394,7 +393,6 @@ export default Vue.extend({
         downloadFile(url, fileName) {
             console.log(url, 'url');
             if (url) {
-                // 实际项目中的下载逻辑
                 const params = {
                     condition: {
                         primaryKey: url,

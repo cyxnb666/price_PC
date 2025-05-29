@@ -168,16 +168,9 @@ export default Vue.extend({
       areaList: [],
       categoryTypeOptions: [
         { label: '全部', value: '' },
-        { label: '水果', value: 'fruit' },
-        { label: '蔬菜', value: 'vegetable' },
       ],
       varietyOptions: [
         { label: '全部', value: '' },
-        { label: '苹果', value: 'apple' },
-        { label: '橙子', value: 'orange' },
-        { label: '香蕉', value: 'banana' },
-        { label: '白菜', value: 'cabbage' },
-        { label: '萝卜', value: 'radish' },
       ],
       subscriptionSourceOptions: [
         { label: '全部', value: '' }
@@ -200,6 +193,12 @@ export default Vue.extend({
     };
   },
   watch: {
+    // 监听品种变化
+    'formData.varietyId': function (newVal) {
+      this.getCategoryOptions(newVal);
+      // 品种变化时清空品类选择
+      this.formData.categoryType = '';
+    },
   },
   mounted() {
     const hasState = this.loadStateFromStorage();
@@ -210,10 +209,72 @@ export default Vue.extend({
       this.saveStateToStorage();
     }
     this.getAreaList();
+    this.getVarietyOptions();
     this.getSubscriptionSourceOptions();
     this.getSourceNameOptions();
   },
   methods: {
+    // 获取品类数据
+    getCategoryOptions(varietyId) {
+      if (!varietyId) {
+        this.categoryTypeOptions = [{ label: '全部', value: '' }];
+        return;
+      }
+
+      const params = {
+        condition: {
+          primaryKey: varietyId
+        }
+      };
+
+      this.$request
+        .post('/web/category/selectVarietyCategories', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.categoryTypeOptions = [{ label: '全部', value: '' }];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.categoryName,
+                value: item.categoryId,
+              }));
+
+              this.categoryTypeOptions = [...this.categoryTypeOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取品类失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取品类失败');
+        });
+    },
+    // 获取品种数据
+    getVarietyOptions() {
+      this.$request
+        .post('/web/variety/selectButtomVarieties')
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.varietyOptions = [{ label: '全部', value: '' }];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.varietyName,
+                value: item.varietyId,
+              }));
+
+              this.varietyOptions = [...this.varietyOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取品种失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取品种失败');
+        });
+    },
     // 获取行政区划数据
     getAreaList() {
       this.$request
@@ -320,6 +381,7 @@ export default Vue.extend({
     },
     onReset() {
       this.$set(this.$data, 'formData', this.$options.data().formData);
+      this.categoryTypeOptions = [{ label: '全部', value: '' }];
       this.getList(true);
       this.saveStateToStorage();
     },
@@ -379,7 +441,7 @@ export default Vue.extend({
       this.$router.push({
         name: 'subscriptionRecordDetail',
         params: {
-          id: String(row.id),
+          id: String(row.recordId),
         },
       });
     },

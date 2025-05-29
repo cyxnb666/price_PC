@@ -13,13 +13,13 @@
                             <t-col :span="4">
                                 <div class="field-item">
                                     <label>行政区划</label>
-                                    <t-input v-model="basicInfo.adminRegion" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.areaname" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="4">
                                 <div class="field-item">
                                     <label>品种大类</label>
-                                    <t-input v-model="basicInfo.majorCategory" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.varietyName" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="4">
@@ -34,19 +34,19 @@
                             <t-col :span="4">
                                 <div class="field-item">
                                     <label>价格日期</label>
-                                    <t-input v-model="basicInfo.priceDate" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.collectDate" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="4">
                                 <div class="field-item">
                                     <label>上报时间</label>
-                                    <t-input v-model="basicInfo.reportTime" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.collectTime" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="4">
                                 <div class="field-item">
                                     <label>采价员</label>
-                                    <t-input v-model="basicInfo.collector" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.collectorName" disabled placeholder="" />
                                 </div>
                             </t-col>
                         </t-row>
@@ -74,7 +74,7 @@
                                             <template #trigger="{ open }">
                                                 <div
                                                     class="tdesign-demo-image-viewer__ui-image tdesign-demo-image-viewer__base">
-                                                    <img :alt="file.name" :src="file.url"
+                                                    <img :alt="file.fileName" :src="file.fileUrl"
                                                         class="tdesign-demo-image-viewer__ui-image--img" />
                                                     <div class="tdesign-demo-image-viewer__ui-image--hover"
                                                         @click="open">
@@ -90,8 +90,9 @@
                                             <div class="image-container">
                                                 <div class="video-placeholder">
                                                     <t-icon name="cloud-download" class="downVideo"
-                                                        @click="downloadFile(file.id, file.name)" />
-                                                    <video :src="file.url" controls controlsList="nodownload"></video>
+                                                        @click="downloadFile(file.fileId, file.fileName)" />
+                                                    <video :src="file.fileUrl" controls
+                                                        controlsList="nodownload"></video>
                                                 </div>
                                             </div>
                                         </div>
@@ -101,9 +102,9 @@
                                             class="credential-item">
                                             <div class="file-container" @click="handleFileClick(file)">
                                                 <div class="file-icon">
-                                                    <i class="file-type">{{ file.type.toUpperCase() }}</i>
+                                                    <i class="file-type">{{ file.fileSuffix.toUpperCase() }}</i>
                                                 </div>
-                                                <div class="file-name">{{ file.name }}</div>
+                                                <div class="file-name">{{ file.fileName }}</div>
                                             </div>
                                         </div>
 
@@ -143,66 +144,20 @@ export default Vue.extend({
     data() {
         return {
             loading: false,
-            activeTab: 'variety1',
+            activeTab: '',
             basicInfo: {
-                adminRegion: '四川-成都-龙泉',
-                majorCategory: '柑橘',
-                reportLocation: '都江堰市场',
-                priceDate: '2025-02-02',
-                reportTime: '2025-02-11 10:12:53',
-                collector: '张五',
+                areaname: '',
+                varietyName: '',
+                reportLocation: '', // 临时模拟字段
+                collectDate: '',
+                collectTime: '',
+                collectorName: '', // 临时模拟字段
             },
-            varietyTabs: [
-                {
-                    label: '肥妃柑',
-                    value: 'variety1',
-                    priceData: [
-                        { id: 1, pricingMethod: '按果径', specification: '90-100mm', price: '2.2' },
-                        { id: 2, pricingMethod: '按果径', specification: '101-200mm', price: '2.5' },
-                        { id: 3, pricingMethod: '按重量', specification: '100-200g', price: '3' },
-                    ],
-                    files: {
-                        images: [
-                            { id: '1', name: '图片1.jpg', url: 'https://tdesign.gtimg.com/site/source/figma-pc.png' },
-                            { id: '2', name: '图片2.jpg', url: 'https://tdesign.gtimg.com/site/source/figma-mobile.png' },
-                        ],
-                        imageUrls: [
-                            'https://tdesign.gtimg.com/site/source/figma-pc.png',
-                            'https://tdesign.gtimg.com/site/source/figma-mobile.png',
-                        ],
-                        videos: [
-                            { id: '3', name: '视频1.mp4', url: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-                        ],
-                        others: [
-                            { id: '4', name: '文档1.docx', url: '#', type: 'docx' },
-                        ],
-                    },
-                },
-                {
-                    label: '不知火',
-                    value: 'variety2',
-                    priceData: [
-                        { id: 4, pricingMethod: '按果径', specification: '80-90mm', price: '1.8' },
-                        { id: 5, pricingMethod: '按果径', specification: '91-110mm', price: '2.2' },
-                    ],
-                    files: {
-                        images: [
-                            { id: '5', name: '图片3.jpg', url: 'https://tdesign.gtimg.com/site/source/figma-pc.png' },
-                        ],
-                        imageUrls: [
-                            'https://tdesign.gtimg.com/site/source/figma-pc.png',
-                        ],
-                        videos: [],
-                        others: [
-                            { id: '6', name: '价格表.xlsx', url: '#', type: 'xlsx' },
-                        ],
-                    },
-                },
-            ],
+            varietyTabs: [],
             priceColumns: [
-                { title: '计价方式', colKey: 'pricingMethod' },
-                { title: '规格', colKey: 'specification' },
-                { title: '行情价', colKey: 'price' },
+                { title: '计价方式', colKey: 'specsTypeName' },
+                { title: '规格', colKey: 'fvSpecs' },
+                { title: '行情价', colKey: 'unitPriceStr' },
             ],
         };
     },
@@ -210,32 +165,187 @@ export default Vue.extend({
         this.fetchData();
     },
     methods: {
-        fetchData() {
+        async fetchData() {
             this.loading = true;
-            // 模拟API请求延迟
-            setTimeout(() => {
+
+            const params = {
+                condition: {
+                    primaryKey: this.id,
+                },
+            };
+
+            try {
+                const res = await this.$request.post('/web/market/saveFruitMarket', params);
+                if (res.retCode === 200) {
+                    const data = res.retData;
+                    console.log('采价行情详情数据:', data);
+
+                    // 设置基础信息
+                    this.basicInfo = {
+                        areaname: data.areaname || '',
+                        varietyName: data.varietyName || '',
+                        reportLocation: data.reportLocation || '暂未提供记得改', // 临时模拟
+                        collectDate: data.collectDate || '',
+                        collectTime: data.collectTime || '',
+                        collectorName: data.collectorName || '暂未提供记得改', // 临时模拟
+                    };
+
+                    // 处理采价信息标签页
+                    this.varietyTabs = [];
+                    if (data.collectCategories && data.collectCategories.length > 0) {
+                        for (let i = 0; i < data.collectCategories.length; i++) {
+                            const category = data.collectCategories[i];
+                            const tabData = {
+                                label: category.categoryName || `品类${i + 1}`,
+                                value: `category${i + 1}`,
+                                priceData: category.specss || [],
+                                files: {
+                                    images: [],
+                                    imageUrls: [],
+                                    videos: [],
+                                    others: [],
+                                },
+                            };
+
+                            // 处理文件
+                            if (category.priceFiles && category.priceFiles.length > 0) {
+                                await this.processFilesForTab(tabData, category.priceFiles);
+                            }
+
+                            this.varietyTabs.push(tabData);
+                        }
+                    }
+
+                    // 设置默认激活的标签页
+                    if (this.varietyTabs.length > 0) {
+                        this.activeTab = this.varietyTabs[0].value;
+                    }
+                } else {
+                    this.$message.error(res.retMsg || '获取详情数据失败');
+                }
+            } catch (e) {
+                console.error('API error:', e);
+                this.$message.error('获取详情数据失败');
+            } finally {
                 this.loading = false;
-                // 在实际应用中，这里会是一个真正的API请求
-                // this.$request.get(`/api/pricingMarket/detail/${this.id}`)
-                //   .then(res => {
-                //     if (res.retCode === 200) {
-                //       // 设置数据
-                //     }
-                //   })
-            }, 500);
+            }
         },
+
+        // 处理单个标签页的文件
+        async processFilesForTab(tabData, priceFiles) {
+            for (const file of priceFiles) {
+                // 获取文件预览URL
+                const fileUrl = await this.fetchFileUrl(file.fileId);
+                const fileWithUrl = {
+                    ...file,
+                    fileUrl: fileUrl,
+                };
+
+                // 根据文件类型分类
+                if (this.isImageFile(file.fileSuffix)) {
+                    tabData.files.images.push(fileWithUrl);
+                    tabData.files.imageUrls.push(fileUrl);
+                } else if (this.isVideoFile(file.fileSuffix)) {
+                    tabData.files.videos.push(fileWithUrl);
+                } else {
+                    tabData.files.others.push(fileWithUrl);
+                }
+            }
+        },
+
+        // 获取文件预览URL
+        async fetchFileUrl(fileId) {
+            if (!fileId) return null;
+
+            try {
+                const params = {
+                    condition: {
+                        primaryKey: fileId,
+                    },
+                };
+
+                const response = await this.$request.post('/file/preview', params, {
+                    responseType: 'arraybuffer',
+                });
+
+                const blob = new Blob([response.data]);
+                const objectUrl = URL.createObjectURL(blob);
+                return objectUrl;
+            } catch (error) {
+                console.error('Error fetching file URL:', error);
+                return null;
+            }
+        },
+
+        // 判断文件是否为图片
+        isImageFile(fileSuffix) {
+            if (!fileSuffix) return false;
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+            return imageExtensions.includes(fileSuffix.toLowerCase());
+        },
+
+        // 判断文件是否为视频
+        isVideoFile(fileSuffix) {
+            if (!fileSuffix) return false;
+            const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv'];
+            return videoExtensions.includes(fileSuffix.toLowerCase());
+        },
+
         handleTabChange(value) {
             console.log('Tab changed to:', value);
-            // 在实际应用中，可能需要根据选中的tab重新加载数据
         },
+
         handleFileClick(file) {
-            console.log('File clicked:', file);
-            // 在实际应用中，这里可能会下载文件或在新窗口中打开
+            if (!file.fileUrl) return;
+
+            if (file.fileSuffix && file.fileSuffix.toLowerCase() === 'pdf') {
+                this.downloadFile(file.fileId, file.fileName);
+            } else if (this.isDocumentFile(file.fileSuffix)) {
+                this.downloadFile(file.fileId, file.fileName);
+            } else {
+                this.viewFile(file.fileUrl);
+            }
         },
+
+        isDocumentFile(fileSuffix) {
+            if (!fileSuffix) return false;
+            const docExtensions = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
+            return docExtensions.includes(fileSuffix.toLowerCase());
+        },
+
+        // 查看文件
+        viewFile(url) {
+            if (url) {
+                window.open(url, '_blank');
+            }
+        },
+
+        // 下载文件
         downloadFile(fileId, fileName) {
             console.log('Download file:', fileId, fileName);
-            // 在实际应用中，这里会实现文件下载功能
+            if (fileId) {
+                const params = {
+                    condition: {
+                        primaryKey: fileId,
+                    },
+                };
+                this.$request.post('/file/preview', params, {
+                    responseType: 'arraybuffer',
+                })
+                    .then((response) => {
+                        const blob = new Blob([response.data]);
+                        const url = window.URL.createObjectURL(blob);
+                        let link = document.createElement('a');
+                        link.style.display = 'none';
+                        link.href = url;
+                        link.setAttribute('download', fileName);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+            }
         },
+
         goBack() {
             this.$router.back();
         },
