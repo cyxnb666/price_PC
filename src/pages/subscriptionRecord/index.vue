@@ -10,21 +10,21 @@
             </t-form-item>
           </t-col>
           <t-col :span="3">
-            <t-form-item label="品类" name="categoryType">
-              <t-select clearable v-model="formData.categoryType" class="form-item-content" :options="categoryTypeOptions"
-                placeholder="请选择品类" />
-            </t-form-item>
-          </t-col>
-          <t-col :span="3">
             <t-form-item label="品种" name="varietyId">
               <t-select clearable v-model="formData.varietyId" class="form-item-content" :options="varietyOptions"
                 placeholder="请选择品种" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
+            <t-form-item label="品类" name="categoryType">
+              <t-select clearable v-model="formData.categoryType" class="form-item-content"
+                :options="categoryTypeOptions" placeholder="请选择品类" />
+            </t-form-item>
+          </t-col>
+          <t-col :span="3">
             <t-form-item label="订购来源" name="subscriptionSource">
-              <t-select clearable v-model="formData.subscriptionSource" class="form-item-content" :options="subscriptionSourceOptions"
-                placeholder="请选择订购来源" />
+              <t-select clearable v-model="formData.subscriptionSource" class="form-item-content"
+                :options="subscriptionSourceOptions" placeholder="请选择订购来源" />
             </t-form-item>
           </t-col>
         </t-row>
@@ -38,7 +38,8 @@
           </t-col>
           <t-col :span="3">
             <t-form-item label="订购月份" name="subscriptionMonth">
-              <t-date-picker v-model="formData.subscriptionMonth" mode="month" format="YYYY-MM" clearable placeholder="请选择订购月份" />
+              <t-date-picker v-model="formData.subscriptionMonth" mode="month" format="YYYY-MM" clearable
+                placeholder="请选择订购月份" />
             </t-form-item>
           </t-col>
         </t-row>
@@ -86,68 +87,7 @@ export default Vue.extend({
       dataLoading: false,
       exportLoading: false,
       loading: false,
-      data: [
-        {
-          id: '1',
-          reportSequence: 'SUB2024001',
-          priceAffiliation: '华南区域',
-          subscriptionSource: '线上订购',
-          sourceName: '京东商城',
-          categoryType: '水果',
-          varietyName: '苹果',
-          subscriptionMonth: '2024-01',
-          reportTime: '2024-01-15 09:30:00',
-          reporter: '张三'
-        },
-        {
-          id: '2',
-          reportSequence: 'SUB2024002',
-          priceAffiliation: '华东区域',
-          subscriptionSource: '线下订购',
-          sourceName: '批发市场',
-          categoryType: '蔬菜',
-          varietyName: '白菜',
-          subscriptionMonth: '2024-01',
-          reportTime: '2024-01-14 14:20:00',
-          reporter: '李四'
-        },
-        {
-          id: '3',
-          reportSequence: 'SUB2024003',
-          priceAffiliation: '华北区域',
-          subscriptionSource: '线上订购',
-          sourceName: '天猫超市',
-          categoryType: '水果',
-          varietyName: '橙子',
-          subscriptionMonth: '2024-02',
-          reportTime: '2024-01-16 11:10:00',
-          reporter: '王五'
-        },
-        {
-          id: '4',
-          reportSequence: 'SUB2024004',
-          priceAffiliation: '华南区域',
-          subscriptionSource: '电话订购',
-          sourceName: '供应商直销',
-          categoryType: '蔬菜',
-          varietyName: '萝卜',
-          subscriptionMonth: '2024-02',
-          reportTime: '2024-01-13 16:30:00',
-          reporter: '赵六'
-        },
-        {
-          id: '5',
-          reportSequence: 'SUB2024005',
-          priceAffiliation: '华中区域',
-          subscriptionSource: '线上订购',
-          sourceName: '拼多多',
-          categoryType: '水果',
-          varietyName: '香蕉',
-          subscriptionMonth: '2024-03',
-          reportTime: '2024-01-17 08:45:00',
-          reporter: '孙七'
-        }
-      ],
+      data: [],
       columns: [
         {
           title: '上报序号',
@@ -240,22 +180,14 @@ export default Vue.extend({
         { label: '萝卜', value: 'radish' },
       ],
       subscriptionSourceOptions: [
-        { label: '全部', value: '' },
-        { label: '线上订购', value: 'online' },
-        { label: '线下订购', value: 'offline' },
-        { label: '电话订购', value: 'phone' },
+        { label: '全部', value: '' }
       ],
       sourceNameOptions: [
-        { label: '全部', value: '' },
-        { label: '京东商城', value: 'jd' },
-        { label: '天猫超市', value: 'tmall' },
-        { label: '拼多多', value: 'pdd' },
-        { label: '批发市场', value: 'wholesale' },
-        { label: '供应商直销', value: 'supplier' },
+        { label: '全部', value: '' }
       ],
       pagination: {
         pageSize: 10,
-        total: 5,
+        total: 0,
         pageNo: 1,
       },
       treeProps: {
@@ -268,14 +200,6 @@ export default Vue.extend({
     };
   },
   watch: {
-    // 监听品类变化，动态更新品种选项
-    'formData.categoryType': function (newVal) {
-      this.updateVarietyOptions(newVal);
-    },
-    // 监听订购来源变化，动态更新来源名称选项
-    'formData.subscriptionSource': function (newVal) {
-      this.updateSourceNameOptions(newVal);
-    },
   },
   mounted() {
     const hasState = this.loadStateFromStorage();
@@ -286,6 +210,8 @@ export default Vue.extend({
       this.saveStateToStorage();
     }
     this.getAreaList();
+    this.getSubscriptionSourceOptions();
+    this.getSourceNameOptions();
   },
   methods: {
     // 获取行政区划数据
@@ -301,70 +227,69 @@ export default Vue.extend({
           console.log(e);
         });
     },
-    // 根据品类更新品种选项
-    updateVarietyOptions(categoryType) {
-      if (categoryType === 'fruit') {
-        this.varietyOptions = [
-          { label: '全部', value: '' },
-          { label: '苹果', value: 'apple' },
-          { label: '橙子', value: 'orange' },
-          { label: '香蕉', value: 'banana' },
-        ];
-      } else if (categoryType === 'vegetable') {
-        this.varietyOptions = [
-          { label: '全部', value: '' },
-          { label: '白菜', value: 'cabbage' },
-          { label: '萝卜', value: 'radish' },
-        ];
-      } else {
-        this.varietyOptions = [
-          { label: '全部', value: '' },
-          { label: '苹果', value: 'apple' },
-          { label: '橙子', value: 'orange' },
-          { label: '香蕉', value: 'banana' },
-          { label: '白菜', value: 'cabbage' },
-          { label: '萝卜', value: 'radish' },
-        ];
-      }
-      // 如果当前选择的品种不在新的选项中，清空选择
-      if (this.formData.varietyId && !this.varietyOptions.some(option => option.value === this.formData.varietyId)) {
-        this.formData.varietyId = '';
-      }
+    // 获取订购来源选项
+    getSubscriptionSourceOptions() {
+      const params = {
+        condition: {
+          dictType: "STALL_TYPE"
+        }
+      };
+
+      this.$request
+        .post('/web/dict/queryTypeDicts', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.subscriptionSourceOptions = [{ label: '全部', value: '' }];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.dictValue,
+                value: item.dictCode,
+              }));
+
+              this.subscriptionSourceOptions = [...this.subscriptionSourceOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取订购来源失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取订购来源失败');
+        });
     },
-    // 根据订购来源更新来源名称选项
-    updateSourceNameOptions(subscriptionSource) {
-      if (subscriptionSource === 'online') {
-        this.sourceNameOptions = [
-          { label: '全部', value: '' },
-          { label: '京东商城', value: 'jd' },
-          { label: '天猫超市', value: 'tmall' },
-          { label: '拼多多', value: 'pdd' },
-        ];
-      } else if (subscriptionSource === 'offline') {
-        this.sourceNameOptions = [
-          { label: '全部', value: '' },
-          { label: '批发市场', value: 'wholesale' },
-          { label: '供应商直销', value: 'supplier' },
-        ];
-      } else if (subscriptionSource === 'phone') {
-        this.sourceNameOptions = [
-          { label: '全部', value: '' },
-          { label: '供应商直销', value: 'supplier' },
-        ];
-      } else {
-        this.sourceNameOptions = [
-          { label: '全部', value: '' },
-          { label: '京东商城', value: 'jd' },
-          { label: '天猫超市', value: 'tmall' },
-          { label: '拼多多', value: 'pdd' },
-          { label: '批发市场', value: 'wholesale' },
-          { label: '供应商直销', value: 'supplier' },
-        ];
-      }
-      // 如果当前选择的来源名称不在新的选项中，清空选择
-      if (this.formData.sourceName && !this.sourceNameOptions.some(option => option.value === this.formData.sourceName)) {
-        this.formData.sourceName = '';
-      }
+    // 获取来源名称选项
+    getSourceNameOptions() {
+      const params = {
+        condition: {
+          stallType: "",
+          stallVests: [],
+          areacodes: []
+        }
+      };
+
+      this.$request
+        .post('/web/stall/selectChooseStalls', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.sourceNameOptions = [{ label: '全部', value: '' }];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.stallName,
+                value: item.stallId,
+              }));
+
+              this.sourceNameOptions = [...this.sourceNameOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取来源名称失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取来源名称失败');
+        });
     },
     // 保存状态到本地存储
     saveStateToStorage() {
@@ -397,9 +322,6 @@ export default Vue.extend({
       this.$set(this.$data, 'formData', this.$options.data().formData);
       this.getList(true);
       this.saveStateToStorage();
-      // 重置时恢复所有选项
-      this.updateVarietyOptions('');
-      this.updateSourceNameOptions('');
     },
     getList(isSearch = false) {
       if (isSearch) {
@@ -408,27 +330,39 @@ export default Vue.extend({
 
       this.dataLoading = true;
 
-      // 模拟API请求，根据搜索条件过滤数据
-      setTimeout(() => {
-        // 这里可以根据formData中的条件过滤数据
-        let filteredData = [...this.data];
-        
-        // 简单的搜索过滤逻辑示例
-        if (this.formData.categoryType) {
-          const mapping = { 'fruit': '水果', 'vegetable': '蔬菜' };
-          filteredData = filteredData.filter(item => item.categoryType === mapping[this.formData.categoryType]);
-        }
-        
-        if (this.formData.subscriptionSource) {
-          const mapping = { 'online': '线上订购', 'offline': '线下订购', 'phone': '电话订购' };
-          filteredData = filteredData.filter(item => item.subscriptionSource === mapping[this.formData.subscriptionSource]);
-        }
+      const params = {
+        condition: {
+          categoryId: this.formData.categoryType ? Number(this.formData.categoryType) : 0,
+          collectMonth: this.formData.subscriptionMonth || "",
+          orderSource: this.formData.subscriptionSource || "",
+          stallId: this.formData.sourceName || "",
+          varietyId: this.formData.varietyId ? Number(this.formData.varietyId) : 0,
+        },
+        pageNo: this.pagination.pageNo,
+        pageSize: this.pagination.pageSize,
+      };
 
-        this.data = filteredData;
-        this.pagination.total = filteredData.length;
-        this.dataLoading = false;
-        this.saveStateToStorage();
-      }, 800);
+      this.$request
+        .post('/web/orecord/pageQueryOrderRecords', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            // 先打印返回数据看结构
+            console.log('API返回数据:', res.retData);
+
+            this.data = res.retData.records || [];
+            this.pagination.total = res.retData.total || 0;
+            this.saveStateToStorage();
+          } else {
+            this.$message.error(res.retMsg || '获取数据失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取数据失败');
+        })
+        .finally(() => {
+          this.dataLoading = false;
+        });
     },
     onPageSizeChange(size) {
       this.pagination.pageSize = size;
@@ -451,42 +385,62 @@ export default Vue.extend({
     handleExport() {
       this.exportLoading = true;
 
-      // 模拟导出功能
-      setTimeout(() => {
-        this.$message.success('导出成功');
-        this.exportLoading = false;
-        
-        // 实际项目中的导出逻辑：
-        // const params = {
-        //   condition: {
-        //     areaCode: this.formData.areaCode,
-        //     categoryType: this.formData.categoryType,
-        //     varietyId: this.formData.varietyId,
-        //     subscriptionSource: this.formData.subscriptionSource,
-        //     sourceName: this.formData.sourceName,
-        //     subscriptionMonth: this.formData.subscriptionMonth,
-        //   },
-        // };
-        
-        // this.$request
-        //   .post('/web/subscriptionRecord/export', params, {
-        //     responseType: 'arraybuffer',
-        //     headers: {
-        //       'Content-Type': 'application/json;charset=UTF-8',
-        //       Accept: 'application/vnd.ms-excel',
-        //     },
-        //   })
-        //   .then((response) => {
-        //     // 处理导出文件
-        //   })
-        //   .catch((error) => {
-        //     console.error('导出失败:', error);
-        //     this.$message.error('导出失败，请稍后重试');
-        //   })
-        //   .finally(() => {
-        //     this.exportLoading = false;
-        //   });
-      }, 1500);
+      const params = {
+        condition: {
+          categoryId: this.formData.categoryType ? Number(this.formData.categoryType) : 0,
+          collectMonth: this.formData.subscriptionMonth || '',
+          orderSource: this.formData.subscriptionSource || '',
+          stallId: this.formData.sourceName || '',
+          varietyId: this.formData.varietyId ? Number(this.formData.varietyId) : 0,
+        },
+      };
+
+      this.$request
+        .post('/web/orecord/export', params, {
+          responseType: 'arraybuffer',
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            Accept: 'application/vnd.ms-excel',
+          },
+        })
+        .then((response) => {
+          // 处理文件名
+          let filename = '订购记录.xlsx';
+
+          // 从headers中获取文件名
+          const disposition = response.headers['content-disposition'];
+          if (disposition && disposition.indexOf('attachment') !== -1) {
+            const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+            const matches = filenameRegex.exec(disposition);
+            if (matches != null && matches[1]) {
+              filename = decodeURIComponent(matches[1].replace(/['"]/g, ''));
+            }
+          }
+          const blob = new Blob([response.data], {
+            type: 'application/vnd.ms-excel;charset=utf8',
+          });
+          const link = document.createElement('a');
+          const url = window.URL.createObjectURL(blob);
+          link.href = url;
+          link.setAttribute('download', filename);
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          }, 100);
+
+          this.$message.success('导出成功');
+        })
+        .catch((error) => {
+          console.error('导出失败:', error);
+          this.$message.error('导出失败，请稍后重试');
+        })
+        .finally(() => {
+          this.exportLoading = false;
+        });
     },
   },
 });

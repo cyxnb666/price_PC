@@ -15,14 +15,14 @@
             </t-form-item>
           </t-col>
           <t-col :span="3">
-            <t-form-item label="品类" name="categoryType">
-              <t-select clearable v-model="formData.categoryType" class="form-item-content" :options="categoryOptions"
+            <t-form-item label="品种" name="varietyType">
+              <t-select clearable v-model="formData.varietyType" class="form-item-content" :options="varietyOptions"
                 placeholder="默认全部支持，模糊输入带出" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
-            <t-form-item label="品种" name="varietyType">
-              <t-select clearable v-model="formData.varietyType" class="form-item-content" :options="varietyOptions"
+            <t-form-item label="品类" name="categoryType">
+              <t-select clearable v-model="formData.categoryType" class="form-item-content" :options="categoryOptions"
                 placeholder="默认全部支持，模糊输入带出" />
             </t-form-item>
           </t-col>

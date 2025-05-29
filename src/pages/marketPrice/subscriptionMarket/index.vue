@@ -10,14 +10,14 @@
             </t-form-item>
           </t-col>
           <t-col :span="3">
-            <t-form-item label="品类" name="categoryType">
-              <t-select clearable v-model="formData.categoryType" class="form-item-content" :options="categoryOptions"
+            <t-form-item label="品种" name="varietyType">
+              <t-select clearable v-model="formData.varietyType" class="form-item-content" :options="varietyOptions"
                 placeholder="默认全部支持，模糊输入带出" />
             </t-form-item>
           </t-col>
           <t-col :span="3">
-            <t-form-item label="品种" name="varietyType">
-              <t-select clearable v-model="formData.varietyType" class="form-item-content" :options="varietyOptions"
+            <t-form-item label="品类" name="categoryType">
+              <t-select clearable v-model="formData.categoryType" class="form-item-content" :options="categoryOptions"
                 placeholder="默认全部支持，模糊输入带出" />
             </t-form-item>
           </t-col>
@@ -201,33 +201,7 @@ export default Vue.extend({
       rowKey: 'id',
       verticalAlign: 'top',
       hover: true,
-      areaList: [
-        {
-          areaname: '四川',
-          areacode: 'SC',
-          children: [
-            {
-              areaname: '成都',
-              areacode: 'CD',
-              children: [
-                {
-                  areaname: '双区',
-                  areacode: 'SQ',
-                },
-                {
-                  areaname: '金堂',
-                  areacode: 'JT',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          areaname: '重庆',
-          areacode: 'CQ',
-          children: [],
-        },
-      ],
+      areaList: [],
       pagination: {
         pageSize: 10,
         total: 0,
@@ -243,9 +217,23 @@ export default Vue.extend({
     };
   },
   mounted() {
+    this.getAreaList();
     this.getList();
   },
   methods: {
+    // 获取行政区划数据
+    getAreaList() {
+      this.$request
+        .post('/web/area/selectUserDataAreaTree')
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.areaList = res.retData || [];
+          }
+        })
+        .catch((e: Error) => {
+          console.log(e);
+        });
+    },
     onSearch() {
       this.getList(true);
     },
