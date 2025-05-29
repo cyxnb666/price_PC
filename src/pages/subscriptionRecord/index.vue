@@ -94,7 +94,7 @@ export default Vue.extend({
           align: 'left',
           width: 150,
           ellipsis: true,
-          colKey: 'reportSequence',
+          colKey: 'recordId',
           fixed: 'left',
         },
         {
@@ -102,25 +102,25 @@ export default Vue.extend({
           align: 'left',
           width: 120,
           ellipsis: true,
-          colKey: 'priceAffiliation',
+          colKey: 'areaname',
         },
         {
           title: '订购来源',
           width: 100,
           ellipsis: true,
-          colKey: 'subscriptionSource',
+          colKey: 'orderSourceName',
         },
         {
           title: '来源名称',
           width: 120,
           ellipsis: true,
-          colKey: 'sourceName',
+          colKey: 'stallName',
         },
         {
           title: '品类',
           width: 80,
           ellipsis: true,
-          colKey: 'categoryType',
+          colKey: 'categoryName',
         },
         {
           title: '品种',
@@ -132,19 +132,19 @@ export default Vue.extend({
           title: '订购月份',
           width: 100,
           ellipsis: true,
-          colKey: 'subscriptionMonth',
+          colKey: 'collectMonth',
         },
         {
           title: '上报时间',
           width: 160,
           ellipsis: true,
-          colKey: 'reportTime',
+          colKey: 'collectTime',
         },
         {
           title: '上报人',
           width: 100,
           ellipsis: true,
-          colKey: 'reporter',
+          colKey: 'registUserName',
         },
         {
           align: 'left',
@@ -332,6 +332,7 @@ export default Vue.extend({
 
       const params = {
         condition: {
+          areacode: this.formData.areaCode || "",
           categoryId: this.formData.categoryType ? Number(this.formData.categoryType) : 0,
           collectMonth: this.formData.subscriptionMonth || "",
           orderSource: this.formData.subscriptionSource || "",
@@ -387,10 +388,11 @@ export default Vue.extend({
 
       const params = {
         condition: {
+          areacode: this.formData.areaCode || "",
           categoryId: this.formData.categoryType ? Number(this.formData.categoryType) : 0,
-          collectMonth: this.formData.subscriptionMonth || '',
-          orderSource: this.formData.subscriptionSource || '',
-          stallId: this.formData.sourceName || '',
+          collectMonth: this.formData.subscriptionMonth || "",
+          orderSource: this.formData.subscriptionSource || "",
+          stallId: this.formData.sourceName || "",
           varietyId: this.formData.varietyId ? Number(this.formData.varietyId) : 0,
         },
       };
