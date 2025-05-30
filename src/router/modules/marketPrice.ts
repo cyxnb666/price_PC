@@ -31,12 +31,12 @@ export default [
         },
         props: true,
       },
-      {
-        path: 'otherSources',
-        name: 'otherSources',
-        component: () => import('@/pages/marketPrice/otherSources/index.vue'),
-        meta: { title: '其他来源', menuId: 17 },
-      },
+      // {
+      //   path: 'otherSources',
+      //   name: 'otherSources',
+      //   component: () => import('@/pages/marketPrice/otherSources/index.vue'),
+      //   meta: { title: '其他来源', menuId: 17 },
+      // },
       {
         path: 'subscriptionMarket',
         name: 'subscriptionMarket',

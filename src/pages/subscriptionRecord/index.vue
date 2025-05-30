@@ -38,8 +38,8 @@
           </t-col>
           <t-col :span="3">
             <t-form-item label="订购月份" name="subscriptionMonth">
-              <t-date-picker v-model="formData.subscriptionMonth" mode="month" format="YYYY-MM" clearable
-                placeholder="请选择订购月份" />
+              <t-date-range-picker v-model="formData.subscriptionMonth" mode="month" format="YYYY-MM" clearable
+                placeholder="请选择月份区间" />
             </t-form-item>
           </t-col>
         </t-row>
@@ -160,7 +160,7 @@ export default Vue.extend({
         varietyId: '',
         subscriptionSource: '',
         sourceName: '',
-        subscriptionMonth: '',
+        subscriptionMonth: [],
       },
       rowKey: 'id',
       verticalAlign: 'top',
@@ -392,11 +392,19 @@ export default Vue.extend({
 
       this.dataLoading = true;
 
+      let collectMonthStart = '';
+      let collectMonthEnd = '';
+      if (this.formData.subscriptionMonth && this.formData.subscriptionMonth.length === 2) {
+        collectMonthStart = this.formData.subscriptionMonth[0];
+        collectMonthEnd = this.formData.subscriptionMonth[1];
+      }
+
       const params = {
         condition: {
           areacode: this.formData.areaCode || "",
           categoryId: this.formData.categoryType ? Number(this.formData.categoryType) : 0,
-          collectMonth: this.formData.subscriptionMonth || "",
+          collectMonthStart: collectMonthStart,
+          collectMonthEnd: collectMonthEnd,
           orderSource: this.formData.subscriptionSource || "",
           stallId: this.formData.sourceName || "",
           varietyId: this.formData.varietyId ? Number(this.formData.varietyId) : 0,
@@ -448,11 +456,19 @@ export default Vue.extend({
     handleExport() {
       this.exportLoading = true;
 
+      let collectMonthStart = '';
+      let collectMonthEnd = '';
+      if (this.formData.subscriptionMonth && this.formData.subscriptionMonth.length === 2) {
+        collectMonthStart = this.formData.subscriptionMonth[0];
+        collectMonthEnd = this.formData.subscriptionMonth[1];
+      }
+
       const params = {
         condition: {
           areacode: this.formData.areaCode || "",
           categoryId: this.formData.categoryType ? Number(this.formData.categoryType) : 0,
-          collectMonth: this.formData.subscriptionMonth || "",
+          collectMonthStart: collectMonthStart,
+          collectMonthEnd: collectMonthEnd,
           orderSource: this.formData.subscriptionSource || "",
           stallId: this.formData.sourceName || "",
           varietyId: this.formData.varietyId ? Number(this.formData.varietyId) : 0,

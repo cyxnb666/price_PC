@@ -83,24 +83,24 @@ export default [
         },
         props: true,
       },
-      {
-        path: 'priceLocationReportPlan',
-        name: 'priceLocationReportPlan',
-        component: () => import('@/pages/pricingTasks/priceLocationReportPlan/index.vue'),
-        meta: { title: '采价点上报计划', menuId: 14 },
-      },
-      {
-        path: 'priceLocationReportPlanDetail/detail/:id',
-        name: 'priceLocationReportPlanDetail',
-        component: () => import('@/pages/pricingTasks/priceLocationReportPlan/components/PriceLocationReportPlanDetail.vue'),
-        meta: {
-          title: '采价点上报计划详情',
-          menuId: 14,
-          parent: 'priceLocationReportPlanDetail',
-          hidden: true
-        },
-        props: true,
-      },
+      // {
+      //   path: 'priceLocationReportPlan',
+      //   name: 'priceLocationReportPlan',
+      //   component: () => import('@/pages/pricingTasks/priceLocationReportPlan/index.vue'),
+      //   meta: { title: '采价点上报计划', menuId: 14 },
+      // },
+      // {
+      //   path: 'priceLocationReportPlanDetail/detail/:id',
+      //   name: 'priceLocationReportPlanDetail',
+      //   component: () => import('@/pages/pricingTasks/priceLocationReportPlan/components/PriceLocationReportPlanDetail.vue'),
+      //   meta: {
+      //     title: '采价点上报计划详情',
+      //     menuId: 14,
+      //     parent: 'priceLocationReportPlanDetail',
+      //     hidden: true
+      //   },
+      //   props: true,
+      // },
     ],
   },
 ];

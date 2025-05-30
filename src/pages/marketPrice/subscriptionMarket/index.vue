@@ -42,10 +42,10 @@
                 placeholder="默认全部支持" />
             </t-form-item>
           </t-col>
-          <t-col :span="3">
+          <t-col :span="4">
             <t-form-item label="价格月份" name="priceMonth">
-              <t-select clearable v-model="formData.priceMonth" class="form-item-content" :options="priceMonthOptions"
-                placeholder="默认全部" />
+              <t-date-range-picker v-model="formData.priceMonth" mode="month" format="YYYY-MM" clearable
+                placeholder="请选择月份区间" />
             </t-form-item>
           </t-col>
         </t-row>
@@ -94,56 +94,56 @@ export default Vue.extend({
           align: 'left',
           width: 150,
           ellipsis: true,
-          colKey: 'location',
+          colKey: 'areaname',
         },
         {
           title: '月份',
           align: 'left',
           width: 120,
           ellipsis: true,
-          colKey: 'month',
+          colKey: 'collectMonth',
         },
         {
           title: '品类',
           width: 120,
           ellipsis: true,
-          colKey: 'category',
+          colKey: 'categoryName',
         },
         {
           title: '品种',
           width: 120,
           ellipsis: true,
-          colKey: 'variety',
+          colKey: 'varietyName',
         },
         {
           title: '价格方式',
           width: 120,
           ellipsis: true,
-          colKey: 'priceMethod',
+          colKey: 'specsTypeName',
         },
         {
           title: '规格',
           width: 120,
           ellipsis: true,
-          colKey: 'specification',
+          colKey: 'ruleName',
         },
         {
           title: '价格',
           width: 120,
           ellipsis: true,
-          colKey: 'price',
+          colKey: 'unitPrice',
         },
         {
           title: '来源',
           width: 120,
           ellipsis: true,
-          colKey: 'source',
+          colKey: 'orderSourceName',
         },
         {
           title: '上报序号',
           width: 150,
           ellipsis: true,
-          colKey: 'reportNumber',
+          colKey: 'recordId',
         }
       ],
       formData: {
@@ -153,50 +153,26 @@ export default Vue.extend({
         pricingMethod: '',
         specification: '',
         priceSource: '',
-        priceMonth: '',
+        priceMonth: [],
       },
-      // 模拟的下拉选项数据
+      // 下拉选项数据
       categoryOptions: [
         { label: '全部', value: '' },
-        { label: '柑橘', value: '1' },
-        { label: '桃', value: '2' },
-        { label: '猕猴桃', value: '3' }
       ],
       varietyOptions: [
         { label: '全部', value: '' },
-        { label: '肥妃柑', value: '1' },
-        { label: '皮球桃', value: '2' },
-        { label: '东阳', value: '3' }
       ],
       pricingMethodOptions: [
         { label: '全部', value: '' },
-        { label: '按重量', value: '1' },
-        { label: '按个数', value: '2' }
+        { label: '按重量', value: 'WEIGHT' },
+        { label: '按果径', value: 'DIAMETER' },
+        { label: '按统果', value: 'WHOLE' },
       ],
       specificationOptions: [
         { label: '全部', value: '' },
-        { label: '0-100mm', value: '1' },
-        { label: '101-200mm', value: '2' }
       ],
       priceSourceOptions: [
-        { label: '全部', value: '' },
-        { label: 'xxx经销商', value: '1' },
-        { label: '批发市场', value: '2' }
-      ],
-      priceMonthOptions: [
-        { label: '全部', value: '' },
-        { label: '一月', value: '01' },
-        { label: '二月', value: '02' },
-        { label: '三月', value: '03' },
-        { label: '四月', value: '04' },
-        { label: '五月', value: '05' },
-        { label: '六月', value: '06' },
-        { label: '七月', value: '07' },
-        { label: '八月', value: '08' },
-        { label: '九月', value: '09' },
-        { label: '十月', value: '10' },
-        { label: '十一月', value: '11' },
-        { label: '十二月', value: '12' }
+        { label: '全部', value: '' }
       ],
       rowKey: 'id',
       verticalAlign: 'top',
@@ -216,9 +192,38 @@ export default Vue.extend({
       },
     };
   },
+  watch: {
+    // 监听品种变化
+    'formData.varietyType': function (newVal) {
+      this.getCategoryOptions(newVal);
+      // 品种变化时清空品类选择
+      this.formData.categoryType = '';
+      // 品种变化时重新获取规格
+      this.getSpecificationOptions();
+    },
+    // 监听计价方式变化
+    'formData.pricingMethod': function () {
+      this.getSpecificationOptions();
+    },
+  },
   mounted() {
     this.getAreaList();
-    this.getList();
+    this.getVarietyOptions();
+    this.getPriceSourceOptions();
+
+    const hasState = this.loadStateFromStorage();
+    if (hasState) {
+      // 如果有保存的状态，需要根据保存的品种获取品类和规格
+      if (this.formData.varietyType) {
+        this.getCategoryOptions(this.formData.varietyType);
+      }
+      this.getSpecificationOptions();
+      this.getList();
+    } else {
+      this.getSpecificationOptions();
+      this.getList();
+      this.saveStateToStorage();
+    }
   },
   methods: {
     // 获取行政区划数据
@@ -234,12 +239,163 @@ export default Vue.extend({
           console.log(e);
         });
     },
+    // 获取品种数据
+    getVarietyOptions() {
+      this.$request
+        .post('/web/variety/selectButtomVarieties')
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.varietyOptions = [{ label: '全部', value: '' }];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.varietyName,
+                value: item.varietyId,
+              }));
+
+              this.varietyOptions = [...this.varietyOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取品种失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取品种失败');
+        });
+    },
+    // 获取品类数据
+    getCategoryOptions(varietyId) {
+      if (!varietyId) {
+        this.categoryOptions = [{ label: '全部', value: '' }];
+        return;
+      }
+
+      const params = {
+        condition: {
+          primaryKey: varietyId
+        }
+      };
+
+      this.$request
+        .post('/web/category/selectVarietyCategories', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.categoryOptions = [{ label: '全部', value: '' }];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.categoryName,
+                value: item.categoryId,
+              }));
+
+              this.categoryOptions = [...this.categoryOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取品类失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取品类失败');
+        });
+    },
+    // 获取规格数据
+    getSpecificationOptions() {
+      const params = {
+        condition: {
+          specsType: this.formData.pricingMethod || "",
+          varietyId: this.formData.varietyType ? Number(this.formData.varietyType) : 0
+        }
+      };
+
+      this.$request
+        .post('/web/market/selectChooseSpecs', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.specificationOptions = [{ label: '全部', value: '' }];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.ruleName,
+                value: item.specsId,
+              }));
+
+              this.specificationOptions = [...this.specificationOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取规格失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取规格失败');
+        });
+    },
+    // 获取价格来源选项（参考订购来源）
+    getPriceSourceOptions() {
+      const params = {
+        condition: {
+          dictType: "STALL_TYPE"
+        }
+      };
+
+      this.$request
+        .post('/web/dict/queryTypeDicts', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            this.priceSourceOptions = [{ label: '全部', value: '' }];
+
+            if (res.retData && res.retData.length > 0) {
+              const options = res.retData.map((item) => ({
+                label: item.dictValue,
+                value: item.dictCode,
+              }));
+
+              this.priceSourceOptions = [...this.priceSourceOptions, ...options];
+            }
+          } else {
+            this.$message.error(res.retMsg || '获取价格来源失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取价格来源失败');
+        });
+    },
+    // 保存状态到本地存储
+    saveStateToStorage() {
+      const stateToSave = {
+        formData: this.formData,
+        pagination: {
+          pageSize: this.pagination.pageSize,
+          pageNo: this.pagination.pageNo
+        }
+      };
+      sessionStorage.setItem('subscriptionMarketState', JSON.stringify(stateToSave));
+    },
+    // 从本地存储加载状态
+    loadStateFromStorage() {
+      const savedState = sessionStorage.getItem('subscriptionMarketState');
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        this.formData = { ...parsedState.formData };
+        this.pagination.pageNo = parsedState.pagination.pageNo;
+        this.pagination.pageSize = parsedState.pagination.pageSize;
+        return true;
+      }
+      return false;
+    },
     onSearch() {
       this.getList(true);
+      this.saveStateToStorage();
     },
     onReset() {
       this.$set(this.$data, 'formData', this.$options.data().formData);
+      this.categoryOptions = [{ label: '全部', value: '' }];
+      this.specificationOptions = [{ label: '全部', value: '' }];
       this.getList(true);
+      this.saveStateToStorage();
     },
     getList(isSearch = false) {
       if (isSearch) {
@@ -248,57 +404,58 @@ export default Vue.extend({
 
       this.dataLoading = true;
 
-      // 示例数据，实际应该是从API获取
-      setTimeout(() => {
-        this.data = [
-          {
-            id: '1',
-            location: '四川-成都-双区',
-            month: '2025-02',
-            category: '柑橘',
-            variety: '肥妃柑',
-            priceMethod: '',
-            specification: '',
-            price: '1.55元/斤',
-            source: 'xxx经销商',
-            reportNumber: '年月日时分秒毫秒',
-          },
-          {
-            id: '2',
-            location: '四川-成都-金堂',
-            month: '2025-02',
-            category: '桃',
-            variety: '皮球桃',
-            priceMethod: '',
-            specification: '',
-            price: '5.26元/公斤',
-            source: 'xxx经销商',
-            reportNumber: '',
-          },
-          {
-            id: '3',
-            location: '四川-成都-金堂',
-            month: '2025-02',
-            category: '猕猴桃',
-            variety: '东阳',
-            priceMethod: '',
-            specification: '',
-            price: '5.26元/公斤',
-            source: 'xxx',
-            reportNumber: '',
-          },
-        ];
-        this.pagination.total = 3;
-        this.dataLoading = false;
-      }, 300);
+      // 处理月份区间
+      let collectMonthStart = '';
+      let collectMonthEnd = '';
+      if (this.formData.priceMonth && this.formData.priceMonth.length === 2) {
+        collectMonthStart = this.formData.priceMonth[0];
+        collectMonthEnd = this.formData.priceMonth[1];
+      }
+
+      const params = {
+        condition: {
+          areacode: this.formData.areaCode || "",
+          categoryId: this.formData.categoryType ? Number(this.formData.categoryType) : 0,
+          collectMonthStart: collectMonthStart,
+          collectMonthEnd: collectMonthEnd,
+          orderSource: this.formData.priceSource || "",
+          specsId: this.formData.specification || "",
+          specsType: this.formData.pricingMethod || "",
+          varietyId: this.formData.varietyType ? Number(this.formData.varietyType) : 0
+        },
+        pageNo: this.pagination.pageNo,
+        pageSize: this.pagination.pageSize,
+      };
+
+      this.$request
+        .post('/web/orecord/pageQueryOrderMarkets', params)
+        .then((res) => {
+          if (res.retCode === 200) {
+            console.log('订购行情数据:', res.retData);
+            this.data = res.retData.records || [];
+            this.pagination.total = res.retData.total || 0;
+            this.saveStateToStorage();
+          } else {
+            this.$message.error(res.retMsg || '获取数据失败');
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          this.$message.error('获取数据失败');
+        })
+        .finally(() => {
+          this.dataLoading = false;
+        });
     },
     onPageSizeChange(size) {
       this.pagination.pageSize = size;
       this.getList();
+      this.saveStateToStorage();
     },
     onCurrentChange(current) {
       this.pagination.pageNo = current;
       this.getList();
+      this.saveStateToStorage();
     },
   },
 });

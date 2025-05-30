@@ -48,6 +48,12 @@
                 placeholder="请选择任务状态" />
             </t-form-item>
           </t-col>
+          <t-col :span="3">
+            <t-form-item label="客户标识" name="customerIdentification">
+              <t-select clearable v-model="formData.customerIdentification" class="form-item-content"
+                :options="customerIdentifierOptions" placeholder="请选择客户标识" />
+            </t-form-item>
+          </t-col>
         </t-row>
 
         <t-row :gutter="20" style="margin-top: 16px">
@@ -69,6 +75,13 @@
             <t-tag v-if="row.status === '3'" theme="primary" variant="light">采价中</t-tag>
             <t-tag v-if="row.status === '4'" theme="success" variant="light">待审核</t-tag>
             <t-tag v-if="row.status === '5'" theme="success" variant="light">已完成</t-tag>
+          </template>
+
+          <template #customerIdentifier="{ row }">
+            <span v-if="row.customerIdentifier.includes('客户')">
+              <span>{{ row.customerIdentifier }}</span>
+            </span>
+            <span v-else>{{ row.customerIdentifier }}</span>
           </template>
 
           <template #op="slotProps">
@@ -155,6 +168,12 @@ export default Vue.extend({
           colKey: 'stallName',
         },
         {
+          title: '采价点客户标识',
+          width: 150,
+          ellipsis: true,
+          colKey: 'customerIdentifier',
+        },
+        {
           title: '品种大类',
           width: 100,
           ellipsis: true,
@@ -224,6 +243,7 @@ export default Vue.extend({
         varietyId: '',
         collectorId: '',
         planStatus: '',
+        customerIdentification: '',
       },
       dialogForm: {
         areaCode: '',
@@ -252,6 +272,11 @@ export default Vue.extend({
         { label: '采价中', value: '3' },
         { label: '待审核', value: '4' },
         { label: '已完成', value: '5' },
+      ],
+      customerIdentifierOptions: [
+        { label: '全部', value: '' },
+        { label: '客户', value: '1' },
+        { label: '非客户', value: '0' },
       ],
       paramsData: null,
       pagination: {
@@ -595,6 +620,7 @@ export default Vue.extend({
           varietyId: this.formData.varietyId,
           collectorId: this.formData.collectorId,
           planStatus: this.formData.planStatus,
+          customerIdentification: this.formData.customerIdentification,
         },
         pageNo: this.pagination.pageNo,
         pageSize: this.pagination.pageSize,
@@ -615,6 +641,7 @@ export default Vue.extend({
                 varietyName: item.varietyName || '',
                 planSaleDate: item.planSaleDate || '',
                 planSaleWeight: item.planSaleWeight || '',
+                customerIdentifier: this.formatCustomerIdentifier(item.customerIdentification),
                 stallType: item.stallType,
                 stallTypeName: item.stallTypeName || '',
                 stallVest: item.stallVest,
@@ -637,6 +664,12 @@ export default Vue.extend({
         .finally(() => {
           this.dataLoading = false;
         });
+    },
+        formatCustomerIdentifier(value) {
+      if (value === '1') return '客户';
+      if (value === '0') return '非客户';
+      if (value === '') return '客户、非客户';
+      return '';
     },
     onPageSizeChange(size) {
       this.pagination.pageSize = size;
