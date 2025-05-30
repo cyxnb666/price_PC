@@ -12,6 +12,12 @@
             <t-row :gutter="[16, 16]">
               <t-col :span="4">
                 <div class="field-item">
+                  <label>任务编号</label>
+                  <t-input v-model="basicInfo.auditTaskId" disabled placeholder="" />
+                </div>
+              </t-col>
+              <t-col :span="4">
+                <div class="field-item">
                   <label>采价员</label>
                   <t-input v-model="basicInfo.pricingPersonnel" disabled placeholder="" />
                 </div>
@@ -133,126 +139,118 @@
                 <div class="price-info">
                   <div class="price-info-title">价格信息</div>
 
-                  <t-row :gutter="[16, 16]">
-                    <t-col :span="4">
-                      <div class="field-item">
-                        <label>品种大类</label>
-                        <t-input v-model="currentPoint.varietyName" disabled placeholder="" />
-                      </div>
-                    </t-col>
-                    <t-col :span="4">
-                      <div class="field-item">
-                        <label>品种小类</label>
-                        <t-input v-model="currentPoint.categoryName" disabled placeholder="" />
-                      </div>
-                    </t-col>
-                    <t-col :span="4">
-                      <div class="field-item">
-                        <label>价格日期</label>
-                        <t-input v-model="currentPoint.collectDate" disabled placeholder="" />
-                      </div>
-                    </t-col>
-                  </t-row>
-                  <t-table :data="currentPoint.specss" :columns="priceColumns" rowKey="id" bordered>
-                    <template #fvSpecsUnit="{ row }">
-                      <span>{{ fvSpecsUnit[row.fvSpecsUnit] }}</span>
-                    </template>
-                    <template #specification="{ row }">
-                      <span>{{ formater(row, row.fvSpecsUnit) }}</span>
-                    </template>
-                    <template #unitPriceStr="{ row }">
-                      <span>{{ row.unitPrice }}元/{{ row.varietyUnitCnm }}</span>
-                    </template>
-                  </t-table>
+                  <div class="category-tabs" v-if="categories.length > 0">
+                    <t-tabs v-model="activeTabIndex" @change="onTabChange">
+                      <t-tab-panel v-for="(category, index) in categories" :key="category.collectCategoryId"
+                        :value="index" :label="category.categoryName">
+                        <div class="tab-content">
+                          <t-table :data="currentCategoryData.specss || []" :columns="priceColumns" rowKey="id"
+                            bordered>
+                            <template #fvSpecsUnit="{ row }">
+                              <span>{{ fvSpecsUnit[row.fvSpecsUnit] }}</span>
+                            </template>
+                            <template #specification="{ row }">
+                              <span>{{ formater(row, row.fvSpecsUnit) }}</span>
+                            </template>
+                            <template #unitPriceStr="{ row }">
+                              <span>{{ row.unitPrice }}元/{{ row.varietyUnitCnm }}</span>
+                            </template>
+                          </t-table>
 
-                  <div class="evidence-section">
-                    <div class="evidence-title">价格佐证凭据</div>
-                    <div class="credentials-container">
-                      <t-image-viewer v-for="(file, index) in priceImageFiles" :key="file.fileId" :default-index="index"
-                        :images="priceImageUrls">
-                        <template #trigger="{ open }">
-                          <div class="tdesign-demo-image-viewer__ui-image tdesign-demo-image-viewer__base">
-                            <img :alt="file.fileName" :src="file.fileUrl"
-                              class="tdesign-demo-image-viewer__ui-image--img" />
-                            <div class="tdesign-demo-image-viewer__ui-image--hover" @click="open">
-                              <span><browse-icon size="1.4em" /> 预览</span>
+                          <div class="evidence-section">
+                            <div class="evidence-title">价格佐证凭据</div>
+                            <div class="credentials-container">
+                              <t-image-viewer v-for="(file, index) in currentPriceImageFiles" :key="file.fileId"
+                                :default-index="index" :images="currentPriceImageUrls">
+                                <template #trigger="{ open }">
+                                  <div class="tdesign-demo-image-viewer__ui-image tdesign-demo-image-viewer__base">
+                                    <img :alt="file.fileName" :src="file.fileUrl"
+                                      class="tdesign-demo-image-viewer__ui-image--img" />
+                                    <div class="tdesign-demo-image-viewer__ui-image--hover" @click="open">
+                                      <span><browse-icon size="1.4em" /> 预览</span>
+                                    </div>
+                                  </div>
+                                </template>
+                              </t-image-viewer>
+
+                              <!-- 视频文件 -->
+                              <div v-for="file in currentPriceVideoFiles" :key="file.fileId" class="credential-item">
+                                <div class="image-container">
+                                  <icon-font name="cloud-download" class="downVideo"
+                                    @click="downloadFile(file.fileId, file.fileName)" />
+                                  <video :src="file.fileUrl" autoplay controls controlsList="nodownload"></video>
+                                </div>
+                              </div>
+
+                              <!-- 其他类型文件 -->
+                              <div v-for="file in currentPriceOtherFiles" :key="file.fileId" class="credential-item">
+                                <div class="file-container" @click="handleFileClick(file)">
+                                  <div class="file-icon">
+                                    <i class="file-type">{{ file.fileSuffix }}</i>
+                                  </div>
+                                  <div class="file-name">{{ file.fileName }}</div>
+                                </div>
+                              </div>
+
+                              <!-- 如果没有文件，显示占位符 -->
+                              <div
+                                v-if="!currentPriceOtherFiles.length && !currentPriceVideoFiles.length && !currentPriceImageFiles.length"
+                                class="credential-item">
+                                <div class="image-placeholder">
+                                  <div class="placeholder-x"></div>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </template>
-                      </t-image-viewer>
 
-                      <!-- 视频文件 -->
-                      <div v-for="file in priceVideoFiles" :key="file.fileId" class="credential-item">
-                        <div class="image-container">
-                          <icon-font name="cloud-download" class="downVideo"
-                            @click="downloadFile(file.fileId, file.fileName)" />
-                          <video :src="file.fileUrl" autoplay controls controlsList="nodownload"></video>
-                        </div>
-                      </div>
+                          <!-- <div class="pricing-images-section">
+                            <div class="section-subtitle">采价信息</div>
+                            <div class="credentials-container">
+                              <t-image-viewer 
+                                v-for="(file, index) in currentCollectImageFiles" 
+                                :key="file.fileId"
+                                :default-index="index" 
+                                :images="currentCollectImageUrls"
+                              >
+                                <template #trigger="{ open }">
+                                  <div class="tdesign-demo-image-viewer__ui-image tdesign-demo-image-viewer__base">
+                                    <img :alt="file.fileName" :src="file.fileUrl"
+                                      class="tdesign-demo-image-viewer__ui-image--img" />
+                                    <div class="tdesign-demo-image-viewer__ui-image--hover" @click="open">
+                                      <span><browse-icon size="1.4em" /> 预览</span>
+                                    </div>
+                                  </div>
+                                </template>
+                              </t-image-viewer>
 
-                      <!-- 其他类型文件 -->
-                      <div v-for="file in priceOtherFiles" :key="file.fileId" class="credential-item">
-                        <div class="file-container" @click="handleFileClick(file)">
-                          <div class="file-icon">
-                            <i class="file-type">{{ file.fileSuffix }}</i>
-                          </div>
-                          <div class="file-name">{{ file.fileName }}</div>
-                        </div>
-                      </div>
+                              <div v-for="file in currentCollectVideoFiles" :key="file.fileId" class="credential-item">
+                                <div class="image-container">
+                                  <icon-font name="cloud-download" class="downVideo"
+                                    @click="downloadFile(file.fileId, file.fileName)" />
+                                  <video :src="file.fileUrl" autoplay controls controlsList="nodownload"></video>
+                                </div>
+                              </div>
 
-                      <!-- 如果没有文件，显示占位符 -->
-                      <div v-if="!priceOtherFiles.length && !priceVideoFiles.length && !priceImageFiles.length"
-                        class="credential-item">
-                        <div class="image-placeholder">
-                          <div class="placeholder-x"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                              <div v-for="file in currentCollectOtherFiles" :key="file.fileId" class="credential-item">
+                                <div class="file-container" @click="handleFileClick(file)">
+                                  <div class="file-icon">
+                                    <i class="file-type">{{ file.fileSuffix }}</i>
+                                  </div>
+                                  <div class="file-name">{{ file.fileName }}</div>
+                                </div>
+                              </div>
 
-                  <div class="pricing-images-section">
-                    <div class="section-subtitle">采价信息</div>
-                    <div class="credentials-container">
-                      <t-image-viewer v-for="(file, index) in collectImageFiles" :key="file.fileId"
-                        :default-index="index" :images="collectImageUrls">
-                        <template #trigger="{ open }">
-                          <div class="tdesign-demo-image-viewer__ui-image tdesign-demo-image-viewer__base">
-                            <img :alt="file.fileName" :src="file.fileUrl"
-                              class="tdesign-demo-image-viewer__ui-image--img" />
-                            <div class="tdesign-demo-image-viewer__ui-image--hover" @click="open">
-                              <span><browse-icon size="1.4em" /> 预览</span>
+                              <div v-if="!currentCollectOtherFiles.length && !currentCollectVideoFiles.length && !currentCollectImageFiles.length"
+                                class="credential-item">
+                                <div class="image-placeholder">
+                                  <div class="placeholder-x"></div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </template>
-                      </t-image-viewer>
-
-                      <!-- 视频文件 -->
-                      <div v-for="file in collectVideoFiles" :key="file.fileId" class="credential-item">
-                        <div class="image-container">
-                          <icon-font name="cloud-download" class="downVideo"
-                            @click="downloadFile(file.fileId, file.fileName)" />
-                          <video :src="file.fileUrl" autoplay controls controlsList="nodownload"></video>
+                          </div> -->
                         </div>
-                      </div>
-
-                      <!-- 其他类型文件 -->
-                      <div v-for="file in collectOtherFiles" :key="file.fileId" class="credential-item">
-                        <div class="file-container" @click="handleFileClick(file)">
-                          <div class="file-icon">
-                            <i class="file-type">{{ file.fileSuffix }}</i>
-                          </div>
-                          <div class="file-name">{{ file.fileName }}</div>
-                        </div>
-                      </div>
-
-                      <!-- 如果没有文件，显示占位符 -->
-                      <div v-if="!collectOtherFiles.length && !collectVideoFiles.length && !collectImageFiles.length"
-                        class="credential-item">
-                        <div class="image-placeholder">
-                          <div class="placeholder-x"></div>
-                        </div>
-                      </div>
-                    </div>
+                      </t-tab-panel>
+                    </t-tabs>
                   </div>
                 </div>
               </div>
@@ -260,7 +258,7 @@
           </div>
         </div>
 
-        <div class="section" v-if="auditOpinion.trim() || (basicInfo.auditStatus === '待审核' && hideButtons !== 'true')">
+        <!-- <div class="section" v-if="auditOpinion.trim() || (basicInfo.auditStatus === '待审核' && hideButtons !== 'true')">
           <div class="section-title">
             <span class="section-title-marker"></span>
             <span>审核意见</span>
@@ -269,14 +267,14 @@
             <t-textarea v-model="auditOpinion" placeholder="请输入审核意见..." :autosize="{ minRows: 2 }"
               :disabled="isAuditOpinionReadonly || hideButtons === 'true'" />
           </div>
-        </div>
+        </div> -->
 
         <div class="action-buttons">
           <t-button theme="default" @click="goBack">返回</t-button>
           <t-button theme="success" @click="handleApprove"
-            v-if="basicInfo.auditStatus === '待审核' && hideButtons !== 'true'">审核通过</t-button>
-          <t-button theme="danger" @click="handleReject"
-            v-if="basicInfo.auditStatus === '待审核' && hideButtons !== 'true'">审核不通过</t-button>
+            v-if="basicInfo.auditStatus === '待审核' && hideButtons !== 'true'">确认提交</t-button>
+          <!-- <t-button theme="danger" @click="handleReject"
+            v-if="basicInfo.auditStatus === '待审核' && hideButtons !== 'true'">审核不通过</t-button> -->
         </div>
       </div>
     </t-card>
@@ -325,6 +323,7 @@ export default Vue.extend({
       currentPoint: {},
       auditOpinion: '',
       basicInfo: {
+        auditTaskId: '',
         pricingPersonnel: '',
         reportTime: '',
         reportLocation: '',
@@ -339,53 +338,53 @@ export default Vue.extend({
         { title: '渠道', colKey: 'saleChannelCnm' },
         { title: '计价方式', colKey: 'fvSpecsUnit' },
         { title: '规格', colKey: 'specification' },
-        { title: '出售价格', colKey: 'unitPriceStr' },
+        { title: '价格', colKey: 'unitPriceStr' },
       ],
+      categories: [], // 品类列表
+      activeTabIndex: 0, // 当前激活的tab索引
+      currentCategoryData: {}, // 当前品类的详细数据
     };
   },
   computed: {
-    // currentPoint() {
-    //     return this.pricingPoints.length > 0 ? this.pricingPoints[this.currentPointIndex] : {};
-    // },
-    // 价格佐证凭据中的图片文件
-    priceImageFiles() {
-      if (!this.currentPoint.priceFileIds) return [];
-      return this.currentPoint.priceFileIds.filter((file) => this.isImageFile(file.fileSuffix));
+    // 当前品类的价格佐证凭据中的图片文件
+    currentPriceImageFiles() {
+      if (!this.currentCategoryData.priceFileIds) return [];
+      return this.currentCategoryData.priceFileIds.filter((file) => this.isImageFile(file.fileSuffix));
     },
-    // 价格佐证凭据中的图片URL
-    priceImageUrls() {
-      return this.priceImageFiles.map((file) => file.fileUrl);
+    // 当前品类的价格佐证凭据中的图片URL
+    currentPriceImageUrls() {
+      return this.currentPriceImageFiles.map((file) => file.fileUrl);
     },
-    // 价格佐证凭据中的视频文件
-    priceVideoFiles() {
-      if (!this.currentPoint.priceFileIds) return [];
-      return this.currentPoint.priceFileIds.filter((file) => this.isVideoFile(file.fileSuffix));
+    // 当前品类的价格佐证凭据中的视频文件
+    currentPriceVideoFiles() {
+      if (!this.currentCategoryData.priceFileIds) return [];
+      return this.currentCategoryData.priceFileIds.filter((file) => this.isVideoFile(file.fileSuffix));
     },
-    // 价格佐证凭据中的其他文件
-    priceOtherFiles() {
-      if (!this.currentPoint.priceFileIds) return [];
-      return this.currentPoint.priceFileIds.filter(
+    // 当前品类的价格佐证凭据中的其他文件
+    currentPriceOtherFiles() {
+      if (!this.currentCategoryData.priceFileIds) return [];
+      return this.currentCategoryData.priceFileIds.filter(
         (file) => !this.isImageFile(file.fileSuffix) && !this.isVideoFile(file.fileSuffix),
       );
     },
-    // 采价信息中的图片文件
-    collectImageFiles() {
-      if (!this.currentPoint.collectFileIds) return [];
-      return this.currentPoint.collectFileIds.filter((file) => this.isImageFile(file.fileSuffix));
+    // 当前品类的采价信息中的图片文件
+    currentCollectImageFiles() {
+      if (!this.currentCategoryData.collectFileIds) return [];
+      return this.currentCategoryData.collectFileIds.filter((file) => this.isImageFile(file.fileSuffix));
     },
-    // 采价信息中的图片URL
-    collectImageUrls() {
-      return this.collectImageFiles.map((file) => file.fileUrl);
+    // 当前品类的采价信息中的图片URL
+    currentCollectImageUrls() {
+      return this.currentCollectImageFiles.map((file) => file.fileUrl);
     },
-    // 采价信息中的视频文件
-    collectVideoFiles() {
-      if (!this.currentPoint.collectFileIds) return [];
-      return this.currentPoint.collectFileIds.filter((file) => this.isVideoFile(file.fileSuffix));
+    // 当前品类的采价信息中的视频文件
+    currentCollectVideoFiles() {
+      if (!this.currentCategoryData.collectFileIds) return [];
+      return this.currentCategoryData.collectFileIds.filter((file) => this.isVideoFile(file.fileSuffix));
     },
-    // 采价信息中的其他文件
-    collectOtherFiles() {
-      if (!this.currentPoint.collectFileIds) return [];
-      return this.currentPoint.collectFileIds.filter(
+    // 当前品类的采价信息中的其他文件
+    currentCollectOtherFiles() {
+      if (!this.currentCategoryData.collectFileIds) return [];
+      return this.currentCategoryData.collectFileIds.filter(
         (file) => !this.isImageFile(file.fileSuffix) && !this.isVideoFile(file.fileSuffix),
       );
     },
@@ -427,11 +426,17 @@ export default Vue.extend({
       this.$request
         .post(`/web/${RequestURL[collectResource]}`, params)
         .then(async (res) => {
-          this.loading = false;
           console.log(res);
           if (res.retCode === 200) {
             const data = res.retData;
             this.currentPoint = data;
+
+            if (data.categories && data.categories.length > 0) {
+              this.categories = data.categories;
+              this.activeTabIndex = 0;
+              await this.getCategoryDetail(this.categories[0].collectCategoryId);
+            }
+
             if (collectResource == '3') {
               this.currentPoint.collectFileIds = data.collectFileIds;
               this.currentPoint.collectFileIds.forEach(async (v) => {
@@ -490,7 +495,6 @@ export default Vue.extend({
           }
         })
         .catch((e) => {
-          this.loading = false;
           console.error('API error:', e);
           // this.$message.error('获取详情数据失败');
         })
@@ -498,6 +502,70 @@ export default Vue.extend({
           this.loading = false;
         });
     },
+
+    async getCategoryDetail(collectCategoryId) {
+      if (!collectCategoryId) return;
+
+      this.loading = true;
+      const params = {
+        condition: {
+          primaryKey: collectCategoryId
+        }
+      };
+
+      try {
+        const res = await this.$request.post('/web/large/getCollectCategory', params);
+
+        if (res.retCode === 200) {
+          this.currentCategoryData = res.retData;
+
+          // 处理文件URL
+          if (this.currentCategoryData.priceFileIds) {
+            await Promise.all(this.currentCategoryData.priceFileIds.map(async (file) => {
+              if (this.isImageFile(file.fileSuffix) || this.isVideoFile(file.fileSuffix)) {
+                file.fileUrl = await this.fetchFileUrl(file.fileId);
+              } else {
+                file.fileUrl = file.fileId;
+              }
+            }));
+          }
+
+          if (this.currentCategoryData.collectFileIds) {
+            await Promise.all(this.currentCategoryData.collectFileIds.map(async (file) => {
+              if (this.isImageFile(file.fileSuffix) || this.isVideoFile(file.fileSuffix)) {
+                file.fileUrl = await this.fetchFileUrl(file.fileId);
+              } else {
+                file.fileUrl = file.fileId;
+              }
+            }));
+          }
+
+          // 处理规格数据
+          if (this.currentCategoryData.specss) {
+            this.currentCategoryData.specss = this.currentCategoryData.specss.map((v) => {
+              v.saleChannelCnm = v.saleChannelName || v.saleChannelCnm;
+              return v;
+            });
+          }
+        } else {
+          this.$message.error(res.retMsg || '获取分类详情失败');
+        }
+      } catch (error) {
+        console.error('获取分类详情失败:', error);
+        this.$message.error('获取分类详情失败');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async onTabChange(index) {
+      this.activeTabIndex = index;
+      const category = this.categories[index];
+      if (category && category.collectCategoryId) {
+        await this.getCategoryDetail(category.collectCategoryId);
+      }
+    },
+
     // 判断文件是否为图片
     isImageFile(fileSuffix) {
       if (!fileSuffix) return false;
@@ -587,8 +655,8 @@ export default Vue.extend({
           },
         };
         this.$request.post('/file/preview', params, {
-            responseType: 'arraybuffer',
-          })
+          responseType: 'arraybuffer',
+        })
           .then((response) => {
             const blob = new Blob([response.data]);
             const url = window.URL.createObjectURL(blob);
@@ -666,6 +734,7 @@ export default Vue.extend({
             // 设置基础信息
             this.basicInfo = {
               ...data,
+              auditTaskId: data.auditTaskId || '',
               pricingPersonnel: data.collectorName || '',
               reportTime: data.reportDate || '',
               reportLocation: data.reportLocation || '',
@@ -915,7 +984,13 @@ export default Vue.extend({
 
 .price-info-title {
   font-weight: bold;
-  margin-bottom: 16px;
+}
+
+.category-tabs {
+
+  .tab-content {
+    padding-top: 16px;
+  }
 }
 
 .evidence-section {
