@@ -144,6 +144,17 @@
                       <t-tab-panel v-for="(category, index) in categories" :key="category.collectCategoryId"
                         :value="index" :label="category.categoryName">
                         <div class="tab-content">
+                          <div class="category-info-row">
+                            <div class="info-item">
+                              <span>{{ currentCategoryData.priceType }}</span>
+                            </div>
+                            <div class="info-item">
+                              <span>备注：{{ formatSmallVarieties(currentCategoryData.smallVarieties) }}</span>
+                            </div>
+                            <div class="info-item">
+                              <span>价格日期：{{ currentCategoryData.collectDate }}</span>
+                            </div>
+                          </div>
                           <t-table :data="currentCategoryData.specss || []" :columns="priceColumns" rowKey="id"
                             bordered>
                             <template #fvSpecsUnit="{ row }">
@@ -154,6 +165,14 @@
                             </template>
                             <template #unitPriceStr="{ row }">
                               <span>{{ row.unitPrice }}元/{{ row.varietyUnitCnm }}</span>
+                            </template>
+                            <template #weight="{ row }">
+                              <span>{{ row.weight }}</span>
+                            </template>
+                            <template #auditStatus="{ row }">
+                              <t-switch :value="row.auditStatus === '1'"
+                                :disabled="basicInfo.auditStatus !== '待审核' || hideButtons === 'true'"
+                                @change="handleAuditStatusChange(row, $event)" />
                             </template>
                           </t-table>
 
@@ -201,6 +220,11 @@
                                 </div>
                               </div>
                             </div>
+                          </div>
+
+                          <div class="save-button-container"
+                            v-if="basicInfo.auditStatus === '待审核' && hideButtons !== 'true'">
+                            <t-button theme="primary" @click="handleSave">保存</t-button>
                           </div>
 
                           <!-- <div class="pricing-images-section">
@@ -339,6 +363,8 @@ export default Vue.extend({
         { title: '计价方式', colKey: 'fvSpecsUnit' },
         { title: '规格', colKey: 'specification' },
         { title: '价格', colKey: 'unitPriceStr' },
+        { title: '数量（kg）', colKey: 'weight' },
+        { title: '有效/无效', colKey: 'auditStatus' },
       ],
       categories: [], // 品类列表
       activeTabIndex: 0, // 当前激活的tab索引
@@ -807,6 +833,8 @@ export default Vue.extend({
           calculationMethod: spec.fvSpecs || '',
           specification: spec.specsTypeName || '',
           price: spec.unitPriceStr || '',
+          weight: spec.weight || '',
+          auditStatus: spec.auditStatus || '0',
         };
       });
     },
@@ -818,6 +846,60 @@ export default Vue.extend({
         '2': '审核不通过',
       };
       return statusMap[auditResult] || '未知状态';
+    },
+    // 转换 smallVarieties 值
+    formatSmallVarieties(value) {
+      const varietiesMap = {
+        'ORDER_PRICE': '订单价',
+        'FARMER_SALE_PRICE': '离地价',
+        'BUY_PRICE': '收购价',
+        'SELL_PRICE': '出售价',
+        'WITH_SALES_PRICE': '带销售价'
+      };
+      return varietiesMap[value] || value;
+    },
+    // 处理有效/无效状态变化
+    handleAuditStatusChange(row, value) {
+      row.auditStatus = value ? '1' : '0';
+      console.log('规格ID:', row.collectSpecsId, '新状态:', row.auditStatus);
+    },
+    handleSave() {
+      if (!this.currentCategoryData.specss || this.currentCategoryData.specss.length === 0) {
+        this.$message.warning('没有可保存的规格数据');
+        return;
+      }
+
+      this.loading = true;
+
+      // 构造参数
+      const params = {
+        condition: {
+          specss: this.currentCategoryData.specss.map(spec => ({
+            auditStatus: spec.auditStatus,
+            collectCategoryId: spec.collectCategoryId,
+            collectPriceId: spec.collectPriceId,
+            collectSpecsId: spec.collectSpecsId
+          }))
+        }
+      };
+
+      this.$request.post('/web/collectAudit/collectAuditEffective', params)
+        .then(res => {
+          if (res.retCode === 200) {
+            this.$message.success('保存成功');
+            // 刷新当前品类数据
+            this.getCategoryDetail(this.currentCategoryData.collectCategoryId);
+          } else {
+            this.$message.error(res.retMsg || '保存失败');
+          }
+        })
+        .catch(e => {
+          console.error('保存失败:', e);
+          this.$message.error('保存失败');
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     goBack() {
       this.$router.back();
@@ -1147,6 +1229,11 @@ video {
   margin-top: 16px;
 }
 
+.save-button-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
 .action-buttons {
   display: flex;
   justify-content: center;
@@ -1161,6 +1248,37 @@ video {
 .detail-container {
   padding-bottom: 20px;
   position: relative;
+}
+
+.category-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.info-item {
+  flex: 1;
+
+  &:first-child {
+    text-align: left;
+  }
+
+  &:nth-child(2) {
+    text-align: center;
+  }
+
+  &:last-child {
+    text-align: right;
+  }
+
+  span {
+    font-weight: 500;
+    color: var(--td-text-color-primary);
+  }
 }
 
 /* 图片查看器样式 */

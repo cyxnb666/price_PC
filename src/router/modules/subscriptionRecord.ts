@@ -17,7 +17,7 @@ export default [
                 path: 'index',
                 name: 'subscriptionRecordIndex',
                 component: () => import('@/pages/subscriptionRecord/index.vue'),
-                meta: { title: '订购记录', menuId: 19 },
+                meta: { title: '订购记录', menuId: 20 },
             },
             {
                 path: 'detail/:id',
