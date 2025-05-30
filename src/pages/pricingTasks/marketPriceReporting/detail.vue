@@ -460,7 +460,7 @@ export default Vue.extend({
             if (data.categories && data.categories.length > 0) {
               this.categories = data.categories;
               this.activeTabIndex = 0;
-              await this.getCategoryDetail(this.categories[0].collectCategoryId);
+              await this.getCategoryDetail(this.categories[0].collectCategoryId, collectResource);
             }
 
             if (collectResource == '3') {
@@ -529,10 +529,19 @@ export default Vue.extend({
         });
     },
 
-    async getCategoryDetail(collectCategoryId) {
+    async getCategoryDetail(collectCategoryId, collectResource) {
       if (!collectCategoryId) return;
 
       this.loading = true;
+
+      const apiMap = {
+        '1': '/web/large/getCollectCategory',
+        '2': '/web/collect/getCollectCategory',
+        '3': '/web/owner/getOwnerCollectCategory'
+      };
+
+      const apiUrl = apiMap[collectResource];
+
       const params = {
         condition: {
           primaryKey: collectCategoryId
@@ -540,7 +549,7 @@ export default Vue.extend({
       };
 
       try {
-        const res = await this.$request.post('/web/large/getCollectCategory', params);
+        const res = await this.$request.post(apiUrl, params);
 
         if (res.retCode === 200) {
           this.currentCategoryData = res.retData;
@@ -588,7 +597,7 @@ export default Vue.extend({
       this.activeTabIndex = index;
       const category = this.categories[index];
       if (category && category.collectCategoryId) {
-        await this.getCategoryDetail(category.collectCategoryId);
+        await this.getCategoryDetail(category.collectCategoryId, this.collectResource);
       }
     },
 
