@@ -25,7 +25,7 @@
                             <t-col :span="4">
                                 <div class="field-item">
                                     <label>上报地点</label>
-                                    <t-input v-model="basicInfo.reportLocation" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.reportingLocation" disabled placeholder="" />
                                 </div>
                             </t-col>
                         </t-row>
@@ -62,62 +62,70 @@
                     <t-tabs v-model="activeTab" @change="handleTabChange">
                         <t-tab-panel v-for="(item, index) in varietyTabs" :key="index" :value="item.value"
                             :label="item.label">
-                            <div class="price-info">
-                                <t-table :data="item.priceData" :columns="priceColumns" rowKey="id" bordered />
+                            <t-loading :loading="tabLoading" text="加载中...">
+                                <div class="price-info">
+                                    <t-table :data="currentTabData.priceData" :columns="priceColumns" rowKey="id"
+                                        bordered>
+                                        <template #specsType="{ row }">
+                                            <span>{{ formatSpecsType(row.specsType) }}</span>
+                                        </template>
+                                    </t-table>
 
-                                <div class="evidence-section">
-                                    <div class="evidence-title">价格佐证凭据</div>
-                                    <div class="credentials-container">
-                                        <!-- 图片文件 -->
-                                        <t-image-viewer v-for="(file, fileIndex) in item.files.images" :key="fileIndex"
-                                            :default-index="fileIndex" :images="item.files.imageUrls">
-                                            <template #trigger="{ open }">
-                                                <div
-                                                    class="tdesign-demo-image-viewer__ui-image tdesign-demo-image-viewer__base">
-                                                    <img :alt="file.fileName" :src="file.fileUrl"
-                                                        class="tdesign-demo-image-viewer__ui-image--img" />
-                                                    <div class="tdesign-demo-image-viewer__ui-image--hover"
-                                                        @click="open">
-                                                        <span><t-icon name="browse" size="1.4em" /> 预览</span>
+                                    <div class="evidence-section">
+                                        <div class="evidence-title">价格佐证凭据</div>
+                                        <div class="credentials-container">
+                                            <!-- 图片文件 -->
+                                            <t-image-viewer v-for="(file, fileIndex) in currentTabData.files.images"
+                                                :key="fileIndex" :default-index="fileIndex"
+                                                :images="currentTabData.files.imageUrls">
+                                                <template #trigger="{ open }">
+                                                    <div
+                                                        class="tdesign-demo-image-viewer__ui-image tdesign-demo-image-viewer__base">
+                                                        <img :alt="file.fileName" :src="file.fileUrl"
+                                                            class="tdesign-demo-image-viewer__ui-image--img" />
+                                                        <div class="tdesign-demo-image-viewer__ui-image--hover"
+                                                            @click="open">
+                                                            <span><t-icon name="browse" size="1.4em" /> 预览</span>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </t-image-viewer>
+
+                                            <!-- 视频文件 -->
+                                            <div v-for="(file, fileIndex) in currentTabData.files.videos"
+                                                :key="`video-${fileIndex}`" class="credential-item">
+                                                <div class="image-container">
+                                                    <div class="video-placeholder">
+                                                        <t-icon name="cloud-download" class="downVideo"
+                                                            @click="downloadFile(file.fileId, file.fileName)" />
+                                                        <video :src="file.fileUrl" controls
+                                                            controlsList="nodownload"></video>
                                                     </div>
                                                 </div>
-                                            </template>
-                                        </t-image-viewer>
+                                            </div>
 
-                                        <!-- 视频文件 -->
-                                        <div v-for="(file, fileIndex) in item.files.videos" :key="`video-${fileIndex}`"
-                                            class="credential-item">
-                                            <div class="image-container">
-                                                <div class="video-placeholder">
-                                                    <t-icon name="cloud-download" class="downVideo"
-                                                        @click="downloadFile(file.fileId, file.fileName)" />
-                                                    <video :src="file.fileUrl" controls
-                                                        controlsList="nodownload"></video>
+                                            <!-- 其他类型文件 -->
+                                            <div v-for="(file, fileIndex) in currentTabData.files.others"
+                                                :key="`other-${fileIndex}`" class="credential-item">
+                                                <div class="file-container" @click="handleFileClick(file)">
+                                                    <div class="file-icon">
+                                                        <i class="file-type">{{ file.fileSuffix.toUpperCase() }}</i>
+                                                    </div>
+                                                    <div class="file-name">{{ file.fileName }}</div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <!-- 其他类型文件 -->
-                                        <div v-for="(file, fileIndex) in item.files.others" :key="`other-${fileIndex}`"
-                                            class="credential-item">
-                                            <div class="file-container" @click="handleFileClick(file)">
-                                                <div class="file-icon">
-                                                    <i class="file-type">{{ file.fileSuffix.toUpperCase() }}</i>
+                                            <!-- 如果没有文件，显示占位符 -->
+                                            <div v-if="currentTabData.files.images.length === 0 && currentTabData.files.videos.length === 0 && currentTabData.files.others.length === 0"
+                                                class="credential-item">
+                                                <div class="image-placeholder">
+                                                    <div class="placeholder-x"></div>
                                                 </div>
-                                                <div class="file-name">{{ file.fileName }}</div>
-                                            </div>
-                                        </div>
-
-                                        <!-- 如果没有文件，显示占位符 -->
-                                        <div v-if="item.files.images.length === 0 && item.files.videos.length === 0 && item.files.others.length === 0"
-                                            class="credential-item">
-                                            <div class="image-placeholder">
-                                                <div class="placeholder-x"></div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </t-loading>
                         </t-tab-panel>
                     </t-tabs>
                 </div>
@@ -144,18 +152,28 @@ export default Vue.extend({
     data() {
         return {
             loading: false,
+            tabLoading: false,
             activeTab: '',
             basicInfo: {
                 areaname: '',
                 varietyName: '',
-                reportLocation: '', // 临时模拟字段
+                reportingLocation: '',
                 collectDate: '',
                 collectTime: '',
-                collectorName: '', // 临时模拟字段
+                collectorName: '',
             },
             varietyTabs: [],
+            currentTabData: {
+                priceData: [],
+                files: {
+                    images: [],
+                    imageUrls: [],
+                    videos: [],
+                    others: [],
+                },
+            },
             priceColumns: [
-                { title: '计价方式', colKey: 'specsTypeName' },
+                { title: '计价方式', colKey: 'specsType' },
                 { title: '规格', colKey: 'fvSpecs' },
                 { title: '行情价', colKey: 'unitPriceStr' },
             ],
@@ -175,7 +193,7 @@ export default Vue.extend({
             };
 
             try {
-                const res = await this.$request.post('/web/market/saveFruitMarket', params);
+                const res = await this.$request.post('/web/market/getFruitMarket', params);
                 if (res.retCode === 200) {
                     const data = res.retData;
                     console.log('采价行情详情数据:', data);
@@ -184,41 +202,27 @@ export default Vue.extend({
                     this.basicInfo = {
                         areaname: data.areaname || '',
                         varietyName: data.varietyName || '',
-                        reportLocation: data.reportLocation || '暂未提供记得改', // 临时模拟
+                        reportingLocation: data.reportingLocation || '',
                         collectDate: data.collectDate || '',
                         collectTime: data.collectTime || '',
-                        collectorName: data.collectorName || '暂未提供记得改', // 临时模拟
+                        collectorName: data.collectorName || '',
                     };
 
-                    // 处理采价信息标签页
                     this.varietyTabs = [];
                     if (data.collectCategories && data.collectCategories.length > 0) {
                         for (let i = 0; i < data.collectCategories.length; i++) {
                             const category = data.collectCategories[i];
-                            const tabData = {
+                            this.varietyTabs.push({
                                 label: category.categoryName || `品类${i + 1}`,
                                 value: `category${i + 1}`,
-                                priceData: category.specss || [],
-                                files: {
-                                    images: [],
-                                    imageUrls: [],
-                                    videos: [],
-                                    others: [],
-                                },
-                            };
-
-                            // 处理文件
-                            if (category.priceFiles && category.priceFiles.length > 0) {
-                                await this.processFilesForTab(tabData, category.priceFiles);
-                            }
-
-                            this.varietyTabs.push(tabData);
+                                collectCategoryId: category.collectCategoryId,
+                            });
                         }
                     }
 
-                    // 设置默认激活的标签页
                     if (this.varietyTabs.length > 0) {
                         this.activeTab = this.varietyTabs[0].value;
+                        await this.fetchTabDetailData(this.varietyTabs[0].collectCategoryId);
                     }
                 } else {
                     this.$message.error(res.retMsg || '获取详情数据失败');
@@ -228,6 +232,62 @@ export default Vue.extend({
                 this.$message.error('获取详情数据失败');
             } finally {
                 this.loading = false;
+            }
+        },
+
+        async fetchTabDetailData(collectCategoryId) {
+            if (!collectCategoryId) return;
+
+            this.tabLoading = true;
+
+            const params = {
+                condition: {
+                    primaryKey: collectCategoryId,
+                },
+            };
+
+            try {
+                console.log('调用getFruitMarketCategory接口，参数:', params);
+                const res = await this.$request.post('/weixin/market/getFruitMarketCategory', params);
+
+                if (res.retCode === 200) {
+                    const data = res.retData;
+                    console.log('getFruitMarketCategory返回数据:', data);
+
+                    // 重置当前tab数据
+                    this.currentTabData = {
+                        priceData: data.specss || [],
+                        files: {
+                            images: [],
+                            imageUrls: [],
+                            videos: [],
+                            others: [],
+                        },
+                    };
+
+                    // 处理价格佐证凭据文件
+                    if (data.priceFiles && data.priceFiles.length > 0) {
+                        await this.processFilesForCurrentTab(data.priceFiles);
+                    }
+
+                } else {
+                    this.$message.error(res.retMsg || '获取tab详情数据失败');
+                }
+            } catch (e) {
+                console.error('fetchTabDetailData API error:', e);
+                this.$message.error('获取tab详情数据失败');
+            } finally {
+                this.tabLoading = false;
+            }
+        },
+
+        async handleTabChange(value) {
+            console.log('Tab changed to:', value);
+
+            // 找到对应的tab数据
+            const targetTab = this.varietyTabs.find(tab => tab.value === value);
+            if (targetTab && targetTab.collectCategoryId) {
+                await this.fetchTabDetailData(targetTab.collectCategoryId);
             }
         },
 
@@ -251,6 +311,38 @@ export default Vue.extend({
                     tabData.files.others.push(fileWithUrl);
                 }
             }
+        },
+
+        // 处理当前tab的文件
+        async processFilesForCurrentTab(priceFiles) {
+            for (const file of priceFiles) {
+                // 获取文件预览URL
+                const fileUrl = await this.fetchFileUrl(file.fileId);
+                const fileWithUrl = {
+                    ...file,
+                    fileUrl: fileUrl,
+                };
+
+                // 根据文件类型分类
+                if (this.isImageFile(file.fileSuffix)) {
+                    this.currentTabData.files.images.push(fileWithUrl);
+                    this.currentTabData.files.imageUrls.push(fileUrl);
+                } else if (this.isVideoFile(file.fileSuffix)) {
+                    this.currentTabData.files.videos.push(fileWithUrl);
+                } else {
+                    this.currentTabData.files.others.push(fileWithUrl);
+                }
+            }
+        },
+
+        // 格式化计价方式
+        formatSpecsType(specsType) {
+            const specsTypeMap = {
+                'DIAMETER': '按果径',
+                'WEIGHT': '按重量',
+                'WHOLE': '统果'
+            };
+            return specsTypeMap[specsType] || specsType;
         },
 
         // 获取文件预览URL
@@ -289,10 +381,6 @@ export default Vue.extend({
             if (!fileSuffix) return false;
             const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv'];
             return videoExtensions.includes(fileSuffix.toLowerCase());
-        },
-
-        handleTabChange(value) {
-            console.log('Tab changed to:', value);
         },
 
         handleFileClick(file) {

@@ -19,7 +19,7 @@
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>订购来源</label>
-                                    <t-input v-model="basicInfo.orderSource" disabled placeholder="" />
+                                    <t-input v-model="orderSourceDisplay" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
@@ -229,6 +229,15 @@ export default Vue.extend({
         // 判断是否显示种植户信息
         showPlanterInfo() {
             return this.orderSource !== 'SFRM';
+        },
+        // 转换订购来源显示
+        orderSourceDisplay() {
+            const sourceMap = {
+                'SFRM': '农户',
+                'SMRK': '商超',
+                'SAGENT': '代理商'
+            };
+            return sourceMap[this.basicInfo.orderSource] || this.basicInfo.orderSource;
         },
         // 订购凭据中的图片文件
         subscriptionImageFiles() {
