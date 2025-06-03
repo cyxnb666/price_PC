@@ -19,7 +19,7 @@
                             <t-col :span="3">
                                 <div class="field-item">
                                     <label>订购来源</label>
-                                    <t-input v-model="basicInfo.orderSourceName" disabled placeholder="" />
+                                    <t-input v-model="basicInfo.orderSource" disabled placeholder="" />
                                 </div>
                             </t-col>
                             <t-col :span="3">
@@ -201,7 +201,7 @@ export default Vue.extend({
             basicInfo: {
                 recordId: '',
                 areaname: '',
-                orderSourceName: '',
+                orderSource: '',
                 categoryName: '',
                 varietyName: '',
                 collectMonth: '',
@@ -275,7 +275,7 @@ export default Vue.extend({
                     this.basicInfo = {
                         recordId: data.recordId || '',
                         areaname: data.areaname || '',
-                        orderSourceName: data.orderSourceName || '',
+                        orderSource: data.orderSource || '',
                         categoryName: data.categoryName || '',
                         varietyName: data.varietyName || '',
                         collectMonth: data.collectMonth || '',
