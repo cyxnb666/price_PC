@@ -97,7 +97,7 @@
               style="color: #0052d9; padding: 0px 0px 10px 0px">转派</t-button>
             <t-button theme="primary" variant="text" class="t-button-link" @click="handleAssign(slotProps)"
               v-else-if="!slotProps.row.collectorId" :loading="assignLoading"
-              style="color: #0052d9; padding: 0">指派</t-button>
+              style="color: #0052d9; padding: 0px 0px 10px 0px">指派</t-button>
             <t-button theme="primary" variant="text" class="t-button-link"
               style="color: #e34d59; padding: 0px 0px 10px 0px" @click="handleDelete(slotProps)">删除</t-button>
             <t-button theme="primary" variant="text" class="t-button-link"
